@@ -1,5 +1,7 @@
 import time
+import sys
 import os
+import re
 import torch
 from torch import np
 import torchvision
@@ -14,7 +16,14 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 
+sys.path.insert(0, '/Users/pramitmallick/Desktop/NLU/Project')
 from Models.blocks import *
+
+from data.dataparser import *
+from data.batcher import *
+from readEmbeddings import *
+
+import pdb
 
 def save(model, optimizer, loss, filename):
     # if the_gpu() >= 0:
@@ -39,67 +48,81 @@ def save(model, optimizer, loss, filename):
     #     recursively_set_device(self.model.state_dict(), gpu=the_gpu())
     #     recursively_set_device(self.optimizer.state_dict(), gpu=the_gpu())
 
-# def getModel(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout):
-#     lstm = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout)
-#     return lstm
 
-class nliNet(object):
+
+
+class nliNet(nn.Module):
     """docstring for nliNet"""
-    def __init__(self, arg):
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate):
         super(nliNet, self).__init__()
-        self.encoder = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout)
 
-        self.classifier = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate)
+        self.encoderNli = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout)
 
-
+        self.classifierNli = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate)
 
     def forward(self, s1, s2):
-        # s1 : (s1, s1_len)
-        u = self.encoder(s1)
-        v = self.encoder(s2)
 
-        features = torch.cat((u, v, torch.abs(u-v), u*v), 1)
-        output = self.classifier(features)
+        u = self.encoderNli(s1)
+        v = self.encoderNli(s2)
+
+        features = torch.cat((u, v), 1)
+        output = self.classifierNli(features)
         return output
 
     def encode(self, s1):
-        emb = self.encoder(s1)
+        emb = self.encoderNli(s1)
         return emb
         
 
-# class kaggleDataset(Dataset):
-#     def __init__(self, csvPath, imagesPath, transform = None):
+
+
+class nliDataset(Dataset):
+    def __init__(self, nliPath, glovePath, transform = None):
     
-#         self.data = pd.read_csv(csvPath)
-#         self.imagesPath = imagesPath
-#         self.transform = transform
+        self.data = dataparser.load_nli_data(nliPath)
+        self.paddingElement = ['<s>']
+        self.maxSentenceLength = self.maxlength(self.data)
+        self.vocab = glove2dict(glovePath)
 
-#         self.imagesData = self.data['image_name']
-#         self.labelsData = self.data['tag'].astype('int')
+    def __getitem__(self, index):
 
-#     def __getitem__(self, index):
-#         imageName = os.path.join(self.imagesPath,self.data.iloc[index, 0])
-#         tIO1 = time.monotonic()
-#         image = Image.open(imageName + '.jpg')
-#         tIO2 = time.monotonic()
-#         tPre1 = time.monotonic()
-#         image = image.convert('RGB')
-#         if self.transform is not None:
-#             image = self.transform(image)
-#         tPre2 = time.monotonic()
-#         label = self.labelsData[index]
-#         return image, label, tIO2-tIO1, tPre2-tPre1 
+        s1 = self.pad(self.data[index]['sentence_1'].split())
+        s2 = self.pad(self.data[index]['sentence_2'].split())
 
-#     def __len__(self):
-#         return len(self.data)
+        s1 = self.embed(s1)
+        s2 = self.embed(s2)
+        
+        label = LABEL_MAP[self.data[index]['label']]
+        return (s1, s2), label
+
+    def __len__(self):
+        return len(self.data)
+
+    def maxlength(self, data):
+        maxSentenceLength = max([max(len(d['sentence_1'].split()),len(d['sentence_2'].split())) for d in data])
+        return maxSentenceLength
+
+    def pad(self, sentence):
+        return sentence + (self.maxSentenceLength-len(sentence))*self.paddingElement
+
+    def embed(self, sentence):
+        vector = []
+        for word in sentence:
+            if str(word) in self.vocab:
+                vector = np.concatenate((vector, self.vocab[str(word)]), axis=0)
+            else:
+                vector = np.concatenate((vector, [0]*len(self.vocab['a'])), axis=0)
+        return vector
 
 
 def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion):
-
+    print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
-        data, target = Variable(data), Variable(target)
+        pdb.set_trace()
+        s1, s2 = data
+        s1, s2, target = Variable(s1.double()), Variable(s2.double()), Variable(target.double())
         optimizer.zero_grad()
-        output = model(data)
+        output = model(s1, s2)
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
@@ -114,46 +137,63 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion):
 
 def train(numEpochs, trainLoader, model, optimizer, criterion):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,2000,trainLoader,model,optimizer,criterion)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion)
 
 
 def main():
 
-    batchSize = 100
-    epochs = 5
-    learningRate = 0.01
-    momentum = 0.9
-    numWorkers = 1
-    
-    numEpochs = 5
+    nliPathTrain = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
+    nliPathDev = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
 
+    batchSize = 64
+    learningRate = 0.001
+    momentum = 0.9
+    numWorkers = 5
+    
+    numEpochs = 10
 
     inp_dim = 300
-    model_dim = 10
-    num_layers = 10
+    model_dim = 300
+    num_layers = 1
     reverse = False
     bidirectional = True
     dropout = 0.1
 
-    model = nliNet()
+    mlp_input_dim = 600
+    mlp_dim = 300
+    num_classes = 3
+    num_mlp_layers = 2
+    mlp_ln = True
+    classifier_dropout_rate = 0.1
+
+
+    t1 = time.time()
+    trainingDataset = nliDataset(nliPathTrain, glovePath)
+    print('Time taken - ',time.time()-t1)
+    # devDataset = nliDataset(nliPathDev, glovePath)
+
+    trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
+    # devLoader = DataLoader(testingDataset, battrainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)chSize, num_workers = numWorkers)
+
+    # for batch_idx, (data, target) in enumerate(trainLoader):
+    #     print(batch_idx,' data - ',data,' target - ',target)
+    #     print(batch_idx,' data len - ',len(data),' target len - ',len(target))
+    #     s1, s2 = data
+    #     print(batch_idx,' data len s1 - ',len(s1),' data len s2 - ',len(s2))
+    #     print(batch_idx,' data len s1[0] - ',len(s1[0]),' data len s2[0] - ',len(s2[0]))
+    #     if batch_idx == 2:
+    #         break;
+    
+
+
+    model = nliNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate)
+
     criterion = nn.CrossEntropyLoss()
-    # optimizer = optim.SGD(model.parameters(), lr = learningRate)
-    # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
-    optimizer = optim.Adam(model.parameters(), lr = learningRate)
-
-    # imagesPath = 'kaggleamazon/train-jpg/'
-    # trainData = 'kaggleamazon/train.csv'
-    # testData = 'kaggleamazon/test.csv'
-
-    # transformations = transforms.Compose([transforms.Resize((32,32)),transforms.ToTensor()])
-
-    # trainingDataset = kaggleDataset(trainData,imagesPath,transformations)
-    # testingDataset = kaggleDataset(testData,imagesPath,transformations)
-
-
-    # trainLoader = DataLoader(trainingDataset,batchSize,num_workers=numWorkers)
-    # testLoader = DataLoader(testingDataset,batchSize,num_workers=numWorkers)
-
+    # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
+    # # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
+    # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
+    optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
     train(numEpochs, trainLoader, model, optimizer, criterion)
 
