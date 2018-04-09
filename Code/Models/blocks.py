@@ -498,7 +498,8 @@ class LSTM(nn.Module):
         #   input => seq_len x batch_size x model_dim
         #   h_0   => (num_layers x bi[1,2]) x batch_size x model_dim
         #   c_0   => (num_layers x bi[1,2]) x batch_size x model_dim
-        output, (hn, _) = self.rnn(x, (h0, c0))
+        #import pdb;pdb.set_trace()
+        output, (hn, _) = self.rnn(x.float(), (h0, c0))
 
         if self.reverse:
             output = reverse_tensor(output, dim=1)

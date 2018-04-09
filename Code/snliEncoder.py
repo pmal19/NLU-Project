@@ -4,19 +4,19 @@ import os
 import re
 import torch
 from torch import np
-import torchvision
+#import torchvision
 import pandas as pd
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from PIL import Image
-from torchvision import datasets, transforms
+#from torchvision import datasets, transforms
 from torch.autograd import Variable
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, utils
+#from torchvision import transforms, utils
 
-sys.path.insert(0, '/Users/pramitmallick/Desktop/NLU/Project')
+sys.path.insert(0, '/Users/anhadmohananey/Desktop/NLPResearch/NLU-Project')
 from Models.blocks import *
 
 from data.dataparser import *
@@ -62,10 +62,10 @@ class nliNet(nn.Module):
 
     def forward(self, s1, s2):
 
-        u = self.encoderNli(s1)
-        v = self.encoderNli(s2)
-
-        features = torch.cat((u, v), 1)
+        u1 = self.encoderNli(s1)
+        v1 = self.encoderNli(s2)
+        # pdb.set_trace()
+        features = torch.cat((u1, v1), 2)
         output = self.classifierNli(features)
         return output
 
@@ -118,7 +118,7 @@ class nliDataset(Dataset):
 def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
-        pdb.set_trace()
+        #pdb.set_trace()
         s1, s2 = data
         s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
@@ -144,9 +144,9 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    nliPathTrain = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
-    nliPathDev = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
-    glovePath = '../../glove.6B/glove.6B.300d.txt'
+    nliPathTrain = '/Users/anhadmohananey/Downloads/snli_1.0/snli_1.0_dev.jsonl'
+    nliPathDev = '/Users/anhadmohananey/Downloads/snli_1.0/snli_1.0_dev.jsonl'
+    glovePath = '/Users/anhadmohananey/Downloads/glove/glove.6B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
