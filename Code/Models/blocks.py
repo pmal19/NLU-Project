@@ -454,13 +454,14 @@ class EncodeGRU(GRU):
 
 class LSTM(nn.Module):
     def __init__(self, inp_dim, model_dim, num_layers=1,
-                 reverse=False, bidirectional=False, dropout=None):
+                 reverse=False, bidirectional=False, dropout=None, training=True):
         super(LSTM, self).__init__()
         self.model_dim = model_dim
         self.reverse = reverse
         self.bidirectional = bidirectional
         self.bi = 2 if self.bidirectional else 1
         self.num_layers = num_layers
+        self.training = training
         self.rnn = nn.LSTM(inp_dim, model_dim // self.bi, num_layers=num_layers,
                            batch_first=True,
                            bidirectional=self.bidirectional,
@@ -674,13 +675,13 @@ class MLP(nn.Module):
             num_classes,
             num_mlp_layers,
             mlp_ln,
-            classifier_dropout_rate=0.0):
+            classifier_dropout_rate=0.0,training=True):
         super(MLP, self).__init__()
 
         self.num_mlp_layers = num_mlp_layers
         self.mlp_ln = mlp_ln
         self.classifier_dropout_rate = classifier_dropout_rate
-
+        self.training = training
         features_dim = mlp_input_dim
 
         if mlp_ln:

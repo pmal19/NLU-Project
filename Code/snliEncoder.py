@@ -53,12 +53,12 @@ def save(model, optimizer, loss, filename):
 
 class nliNet(nn.Module):
     """docstring for nliNet"""
-    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate):
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training):
         super(nliNet, self).__init__()
 
-        self.encoderNli = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout)
+        self.encoderNli = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
 
-        self.classifierNli = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate)
+        self.classifierNli = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
 
     def forward(self, s1, s2):
 
@@ -115,12 +115,14 @@ class nliDataset(Dataset):
         return vector
 
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion):
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         pdb.set_trace()
         s1, s2 = data
-        s1, s2, target = Variable(s1.double()), Variable(s2.double()), Variable(target.double())
+        s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
+        s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
+        s1, s2, target = Variable(s1), Variable(s2), Variable(target)
         optimizer.zero_grad()
         output = model(s1, s2)
         loss = criterion(output, target)
@@ -135,9 +137,9 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion):
             save(model, optimizer, loss, 'snliTrained')
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
 
 
 def main():
@@ -167,6 +169,8 @@ def main():
     mlp_ln = True
     classifier_dropout_rate = 0.1
 
+    training = True
+
 
     t1 = time.time()
     trainingDataset = nliDataset(nliPathTrain, glovePath)
@@ -187,7 +191,7 @@ def main():
     
 
 
-    model = nliNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate)
+    model = nliNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
 
     criterion = nn.CrossEntropyLoss()
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
@@ -195,7 +199,7 @@ def main():
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
 
 
 
