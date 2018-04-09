@@ -16,7 +16,8 @@ import numpy as np
 from torch.utils.data import Dataset, DataLoader
 #from torchvision import transforms, utils
 
-sys.path.insert(0, '/Users/anhadmohananey/Desktop/NLPResearch/NLU-Project')
+sys.path.insert(0, '../../')
+sys.path.insert(0, '../')
 from Models.blocks import *
 
 from data.dataparser import *
@@ -125,7 +126,8 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         s1, s2, target = Variable(s1), Variable(s2), Variable(target)
         optimizer.zero_grad()
         output = model(s1, s2)
-        loss = criterion(output, target)
+        # pdb.set_trace()
+        loss = criterion(output[-1], target)
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -144,9 +146,9 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    nliPathTrain = '/Users/anhadmohananey/Downloads/snli_1.0/snli_1.0_dev.jsonl'
-    nliPathDev = '/Users/anhadmohananey/Downloads/snli_1.0/snli_1.0_dev.jsonl'
-    glovePath = '/Users/anhadmohananey/Downloads/glove/glove.6B.300d.txt'
+    nliPathTrain = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
+    nliPathDev = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
