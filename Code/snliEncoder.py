@@ -128,6 +128,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output[-1], target)
+	print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -136,7 +137,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'snliTrained')
+            save(model, optimizer, loss, 'snliTrained22')
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
@@ -146,9 +147,9 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    nliPathTrain = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
-    nliPathDev = '../../Data/snli_1.0/snli_1.0_dev.jsonl'
-    glovePath = '../../glove.6B/glove.6B.300d.txt'
+    nliPathTrain = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_train.jsonl'
+    nliPathDev = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_dev.jsonl'
+    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
