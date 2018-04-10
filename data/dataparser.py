@@ -1,7 +1,7 @@
 import numpy as np
 import json
 import codecs
-
+import unicodecsv
 LABEL_MAP = {
     "entailment": 0,
     "neutral": 1,
@@ -25,21 +25,37 @@ def load_nli_data(path, choose=lambda x: True):
             loaded_example = json.loads(line)
             if loaded_example["gold_label"] not in LABEL_MAP:
                 continue
-
             if not choose(loaded_example):
                 continue
-
             example = {}
             example["label"] = loaded_example["gold_label"]
             example["sentence_1"] = loaded_example["sentence1"]
             example["sentence_2"] = loaded_example["sentence2"]
             examples.append(example)
     return examples
-    
+
 def load_sst_data(
         path):
     dataset = convert_unary_binary_bracketed_data(path)
     return dataset
+
+def load_quora_data(path):
+    examples=[]
+    with open(path) as csvfile:
+        reader = unicodecsv.reader(csvfile, delimiter=",")
+        for i, row in enumerate(reader):
+            if i < 1:
+                continue
+            if len(row) == 0:
+                continue
+            example = {}
+            if len(row[3]) < 1 or len(row[4]) < 1:
+                continue
+            example['sentence_1'] = row[3].lower()
+            example['sentence_2'] = row[4].lower()
+            example['label'] = int(row[5])
+            examples.append(example)
+    return examples
 
 def convert_unary_binary_bracketed_data(
         filename,
