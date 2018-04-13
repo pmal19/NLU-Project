@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import codecs
+import re
 
 LABEL_MAP = {
     "entailment": 0,
@@ -31,11 +32,11 @@ def load_nli_data(path, choose=lambda x: True):
 
             example = {}
             example["label"] = loaded_example["gold_label"]
-            example["sentence_1"] = loaded_example["sentence1"]
-            example["sentence_2"] = loaded_example["sentence2"]
+            example["sentence_1"] = re.sub(r'([^\s\w]|_)+', '', loaded_example["sentence1"]).lower()
+            example["sentence_2"] = re.sub(r'([^\s\w]|_)+', '', loaded_example["sentence2"]).lower()
             examples.append(example)
     return examples
-    
+
 def load_sst_data(
         path):
     dataset = convert_unary_binary_bracketed_data(path)
