@@ -1,0 +1,4 @@
+Loading /scratch/pm2758/nlu/snli_1.0/snli_1.0_train.jsonl
+('Time taken - ', 260.3955600261688)
+('Epoch start - ', 0)
+slurmstepd: error: *** JOB 5412103 ON c99-05 CANCELLED AT 2018-04-09T11:55:16 DUE TO TIME LIMIT ***

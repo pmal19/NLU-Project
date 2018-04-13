@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=NLI
-
+#SBATCH -t72:00:00
 #SBATCH --mem=100GB
 #SBATCH --output=out.%j
 

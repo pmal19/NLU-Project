@@ -121,6 +121,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
         s1, s2 = data
+	batchSize, _ = s1.shape
         s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         s1, s2, target = Variable(s1), Variable(s2), Variable(target)
@@ -128,7 +129,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output[-1], target)
-	print(batch_idx,loss.data[0])
+	# print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -137,7 +138,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'snliTrained22')
+            save(model, optimizer, loss, 'snliTrained_f')
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
@@ -156,7 +157,7 @@ def main():
     momentum = 0.9
     numWorkers = 5
     
-    numEpochs = 10
+    numEpochs = 4
 
     inp_dim = 300
     model_dim = 300
