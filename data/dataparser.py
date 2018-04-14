@@ -3,7 +3,7 @@ import json
 import codecs
 import re
 
-import unicodecsv
+import csv
 
 LABEL_MAP = {
     "entailment": 0,
@@ -45,7 +45,7 @@ def load_sst_data(
 def load_quora_data(path):
     examples=[]
     with open(path) as csvfile:
-        reader = unicodecsv.reader(csvfile, delimiter=",")
+        reader = csv.reader(csvfile, delimiter=",")
         for i, row in enumerate(reader):
             if i < 1:
                 continue
