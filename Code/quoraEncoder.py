@@ -139,7 +139,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'quoraTrained')
+            save(model, optimizer, loss, 'quoraTrained2')
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
@@ -149,10 +149,10 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    quoraPathTrain = '../../questionsTrain.csv'
-    quoraPathDev = '../../questionsDev.csv'
+    quoraPathTrain = '../data/questionsTrain.csv'
+    quoraPathDev = '../data/questionsDev.csv'
     
-    glovePath = '../../glove.6B/glove.6B.300d.txt'
+    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
