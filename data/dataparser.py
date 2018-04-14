@@ -3,7 +3,7 @@ import json
 import codecs
 import re
 
-import unicodecsv
+import csv
 
 LABEL_MAP = {
     "entailment": 0,
@@ -45,7 +45,7 @@ def load_sst_data(
 def load_quora_data(path):
     examples=[]
     with open(path) as csvfile:
-        reader = unicodecsv.reader(csvfile, delimiter=",")
+        reader = csv.reader(csvfile, delimiter=",")
         for i, row in enumerate(reader):
             if i < 1:
                 continue
@@ -93,7 +93,7 @@ def convert_unary_binary_bracketed_data(
                         example["tokens"].append(word.lower())
                         example["transitions"].append(0)
             example["example_id"] = str(len(examples))
-            example["sentence_1"]=" ".join(example["tokens"])
+            example["sentence_1"] = re.sub(r'([^\s\w]|_)+', ''," ".join(example["tokens"])).lower()
             for k in ['example_id','sentence','tokens', 'transitions']:
             	del(example[k])
             examples.append(example)
