@@ -28,7 +28,7 @@ from readEmbeddings import *
 
 import pdb
 
-def save(model, optimizer, loss, filename):
+def save(model, optimizer, loss, filename, dev_loss):
     # if the_gpu() >= 0:
     #     recursively_set_device(self.model.state_dict(), gpu=-1)
     #     recursively_set_device(self.optimizer.state_dict(), gpu=-1)
@@ -37,7 +37,7 @@ def save(model, optimizer, loss, filename):
     save_dict = {
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
-        # 'best_dev_step': self.best_dev_step,
+        'dev_loss': dev_loss,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
@@ -125,7 +125,9 @@ class qoraDataset(Dataset):
         return vector
 
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+
+
+def trainEpoch(epoch, break_val, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
@@ -137,7 +139,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output[-1], target)
-    print(batch_idx,loss.data[0])
+    # print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -146,12 +148,19 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'combTrainersstQuora')
+                dev_data, dev_target = devLoader
+                s1,s2 = dev_data
+                s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+                s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+                s1, s2, dev_target = Variable(s1), Variable(s2), Variable(dev_target)
+                dev_output = model(s1, s2)
+                dev_loss = criterion(dev_output[-1], dev_target)
+            save(model, optimizer, loss, 'combTrainersstQuora', dev_loss)
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def train(numEpochs, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
+        trainEpoch(epoch,20000000,trainLoader, devLoader, model,optimizer,criterion,inp_dim,batchSize, devbatchSize)
 
 
 def main():
@@ -183,10 +192,12 @@ def main():
     t1 = time.time()
     trainingDataset = qoraDataset(quoraPathTrain, glovePath)
     print('Time taken - ',time.time()-t1)
-    # devDataset = qoraDataset(nliPathDev, glovePath)
+    devDataset = qoraDataset(nliPathDev, glovePath)
+    devbatchSize = __len__(devDataset)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    # devLoader = DataLoader(testingDataset, battrainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)chSize, num_workers = numWorkers)
+    devLoader = DataLoader(devDataset, devbatchSize, num_workers = numWorkers)
+    
 
     # for batch_idx, (data, target) in enumerate(trainLoader):
     #     print(batch_idx,' data - ',data,' target - ',target)
@@ -209,7 +220,7 @@ def main():
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
+    train(numEpochs, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize)
 
 
 
