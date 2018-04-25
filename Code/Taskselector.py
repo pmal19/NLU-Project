@@ -53,6 +53,23 @@ class Taskselector(nn.Module):
 	    Returns:
 	        y: The sampled output, which has the property explained above.
 	    """
+		def convert_to_one_hot(indices, num_classes):
+		    """
+		    Args:
+		        indices (Variable): A vector containing indices,
+		            whose size is (batch_size,).
+		        num_classes (Variable): The number of classes, which would be
+		            the second dimension of the resulting one-hot matrix.
+
+		    Returns:
+		        result: The one-hot matrix of size (batch_size, num_classes).
+		    """
+
+		    batch_size = indices.size(0)
+		    indices = indices.unsqueeze(1)
+		    one_hot = Variable(indices.data.new(batch_size, num_classes).zero_()
+		                       .scatter_(1, indices.data, 1))
+		    return one_hot
 
 	    eps = 1e-20
 	    u = logits.data.new(*logits.size()).uniform_()
