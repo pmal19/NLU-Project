@@ -1,0 +1,66 @@
+from Models.blocks import *
+import torch.nn.functional as F
+import numpy as np
+import torch
+sys.path.insert(0, '../../')
+sys.path.insert(0, '../')
+class Taskselector(nn.module):
+	def __init__(self, hidden_dim=100,num_source_tasks=2, gumbel_temperature=1e-20):
+		self.hidden_dim=hidden_dim
+		self.gumbel_temperature=gumbel_temperature
+		self.init_linear=Linear()(hidden_dim*2, num_source_tasks, bias=True)
+
+	def forward(self, se):
+		se=torch.cat(se, dim=2)
+		se_prerelu=self.init_linear(se)
+		se_postrelu=F.relu(se_prerelu)
+		logits=F.log_softmax(se_postrelu)
+		selector=st_gumbel_softmax(logits)
+		return torch.from_numpy(np.repeat(selector, self.hidden_dim))
+	
+
+	def masked_softmax(logits, mask=None):
+	    eps = 1e-20
+	    probs = F.softmax(logits)
+	    if mask is not None:
+	        mask = mask.float()
+	        probs = probs * mask + eps
+	        probs = probs / probs.sum(1, keepdim=True)
+	    return probs
+
+	def st_gumbel_softmax(logits, temperature=1.0, mask=None):
+	    """
+	    Return the result of Straight-Through Gumbel-Softmax Estimation.
+	    It approximates the discrete sampling via Gumbel-Softmax trick
+	    and applies the biased ST estimator.
+	    In the forward propagation, it emits the discrete one-hot result,
+	    and in the backward propagation it approximates the categorical
+	    distribution via smooth Gumbel-Softmax distribution.
+
+	    Args:
+	        logits (Variable): A un-normalized probability values,
+	            which has the size (batch_size, num_classes)
+	        temperature (float): A temperature parameter. The higher
+	            the value is, the smoother the distribution is.
+	        mask (Variable, optional): If given, it masks the softmax
+	            so that indices of '0' mask values are not selected.
+	            The size is (batch_size, num_classes).
+
+	    Returns:
+	        y: The sampled output, which has the property explained above.
+	    """
+
+	    eps = 1e-20
+	    u = logits.data.new(*logits.size()).uniform_()
+	    gumbel_noise = Variable(-torch.log(-torch.log(u + eps) + eps))
+	    y = logits + gumbel_noise
+	    y = masked_softmax(logits=y / temperature, mask=mask)
+	    y_argmax = y.max(1)[1]
+	    y_hard = convert_to_one_hot(
+	        indices=y_argmax,
+	        num_classes=y.size(1)).float()
+	    y = (y_hard - y).detach() + y
+	    return y
+
+
+
