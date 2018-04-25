@@ -1,10 +1,11 @@
+import sys
 from Models.blocks import *
 import torch.nn.functional as F
 import numpy as np
 import torch
 sys.path.insert(0, '../../')
 sys.path.insert(0, '../')
-class Taskselector(nn.module):
+class Taskselector(nn.Module):
 	def __init__(self, hidden_dim=100,num_source_tasks=2, gumbel_temperature=1e-20):
 		self.hidden_dim=hidden_dim
 		self.gumbel_temperature=gumbel_temperature
