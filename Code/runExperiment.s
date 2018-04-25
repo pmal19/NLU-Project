@@ -3,8 +3,8 @@
 #SBATCH --job-name=SST
 #SBATCH -t72:00:00
 #SBATCH --mem=100GB
-#SBATCH --output=out.sst.%j
+#SBATCH --output=out.compTrainer.%j
 
 module load pytorch/python2.7/0.3.0_4
 #module load pytorch/python3.6/0.3.0_4
-python ./sstEncoder.py
+python ./compTrainer.py
