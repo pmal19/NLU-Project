@@ -57,7 +57,7 @@ def save(model, optimizer, loss, filename):
 
 class TaskEncoder(nn.Module):
     """docstring for quoraNet"""
-    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, sst_path, nli_path, which_to_use):
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, sst_path, nli_path, quora_path, which_to_use):
         super(TaskEncoder, self).__init__()
         if which_to_use=="sst":
             loaded = torch.load(sst_path)['model_state_dict']
@@ -77,10 +77,10 @@ class TaskEncoder(nn.Module):
         return emb
 
 class GumbelNet(nn.Module):
-    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training=True):
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, path1,path2, training=True):
         super(GumbelNet, self).__init__()
-        self.encoder1=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, sst_path, nli_path, "sst")
-        self.encoder2=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, sst_path, nli_path, "quora")
+        self.encoder1=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, path1, "","", "sst")
+        self.encoder2=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, "", "", path2,"quora")
         self.task_selector=Taskselector(model_dim , 2)
         self.classifierNli = MLP(model_dim*4, model_dim, 3, 2, True, dropout, training)
     def forward(self, s1, s2):
@@ -115,7 +115,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'combTrainersstQuora')
+            save(model, optimizer, loss, 'Gumbelsstquora')
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
@@ -125,10 +125,10 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    quoraPathTrain = '../data/questionsTrain.csv'
-    quoraPathDev = '../data/questionsDev.csv'
-    
-    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    #quoraPathTrain = '../data/questionsTrain.csv'
+    #quoraPathDev = '../data/questionsDev.csv'
+    nliPathTrain="/scratch/am8676/snli_1.0/snli_1.0_train.jsonl"
+    glovePath = '/scratch/am8676/glove.840B.300d.txt'
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
@@ -152,14 +152,15 @@ def main():
     t1 = time.time()
     print('Time taken - ',time.time()-t1)
     # devDataset = qoraDataset(nliPathDev, glovePath)
-
+    trainingDataset = nliDataset(nliPathTrain, glovePath)
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
 
     sst_path="sstTrained"
     nli_path="quoraTrained"
-    self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training=True
-    model = GumbelNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
-    
+    quora_path="quoraTrained"
+    #self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training=True
+    model = GumbelNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, sst_path, quora_path,training)
+
     criterion = nn.CrossEntropyLoss()
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
