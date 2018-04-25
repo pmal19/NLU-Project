@@ -76,6 +76,44 @@ class TaskEncoder(nn.Module):
         emb = self.encoderTask(s1)
         return emb
 
+class nliDataset(Dataset):
+    def __init__(self, nliPath, glovePath, transform = None):
+    
+        self.data = dataparser.load_nli_data(nliPath)
+        self.paddingElement = ['<s>']
+        self.maxSentenceLength = self.maxlength(self.data)
+        self.vocab = glove2dict(glovePath)
+
+    def __getitem__(self, index):
+
+        s1 = self.pad(self.data[index]['sentence_1'].split())
+        s2 = self.pad(self.data[index]['sentence_2'].split())
+
+        s1 = self.embed(s1)
+        s2 = self.embed(s2)
+        
+        label = LABEL_MAP[self.data[index]['label']]
+        return (s1, s2), label
+
+    def __len__(self):
+        return len(self.data)
+
+    def maxlength(self, data):
+        maxSentenceLength = max([max(len(d['sentence_1'].split()),len(d['sentence_2'].split())) for d in data])
+        return maxSentenceLength
+
+    def pad(self, sentence):
+        return sentence + (self.maxSentenceLength-len(sentence))*self.paddingElement
+
+    def embed(self, sentence):
+        vector = []
+        for word in sentence:
+            if str(word) in self.vocab:
+                vector = np.concatenate((vector, self.vocab[str(word)]), axis=0)
+            else:
+                vector = np.concatenate((vector, [0]*len(self.vocab['a'])), axis=0)
+        return vector
+
 class GumbelNet(nn.Module):
     def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, path1,path2, training=True):
         super(GumbelNet, self).__init__()
