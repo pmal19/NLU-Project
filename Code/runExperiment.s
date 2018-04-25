@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=SST
+#SBATCH --job-name=CompTrainer
 #SBATCH -t72:00:00
 #SBATCH --mem=100GB
 #SBATCH --output=out.compTrainer.%j
