@@ -70,7 +70,10 @@ class TaskEncoder(nn.Module):
         self.encoderTask.load_state_dict(newModel)
 
     def forward(self, s):
-        return self.encode(s)
+        print("TaskEncoder forward")
+        enc = self.encode(s)
+        pdb.set_trace()
+        return enc[-1]
 
     def encode(self, s1):
         emb = self.encoderTask(s1)
@@ -143,7 +146,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         optimizer.zero_grad()
         output = model(s1, s2)
         # pdb.set_trace()
-        loss = criterion(output[-1], target)
+        loss = criterion(output, target)
     	print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
@@ -165,8 +168,10 @@ def main():
 
     #quoraPathTrain = '../data/questionsTrain.csv'
     #quoraPathDev = '../data/questionsDev.csv'
-    nliPathTrain="/scratch/am8676/snli_1.0/snli_1.0_train.jsonl"
-    glovePath = '/scratch/am8676/glove.840B.300d.txt'
+    nliPathTrain="../../Data/snli_1.0/snliSmallaa"
+    nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
+
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
