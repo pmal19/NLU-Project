@@ -7,9 +7,9 @@
 #SBATCH --nodes=1
 #SBATCH --mem=50GB
 ###SBATCH --partition=gpu
-#SBATCH --gres=gpu:p1080:1
+#SBATCH --gres=gpu:1
 #SBATCH --output=out.snliTrainer.%j
 
 module load pytorch/python2.7/0.3.0_4
 #module load pytorch/python3.6/0.3.0_4
-python ./snliEncoder.py
+python ./quoraEncoder.py
