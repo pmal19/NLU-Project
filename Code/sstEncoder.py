@@ -29,7 +29,7 @@ from readEmbeddings import *
 
 import pdb
 
-def save(model, optimizer, loss, filename):
+def save(model, optimizer, loss, filename, dev_loss):
     # if the_gpu() >= 0:
     #     recursively_set_device(self.model.state_dict(), gpu=-1)
     #     recursively_set_device(self.optimizer.state_dict(), gpu=-1)
@@ -39,10 +39,12 @@ def save(model, optimizer, loss, filename):
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
         # 'best_dev_step': self.best_dev_step,
+
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
-        'loss': loss.data[0]
+        'loss': loss.data[0],
+        'devloss': dev_loss.data[0]
         }
     # if self.sparse_optimizer is not None:
     #     save_dict['sparse_optimizer_state_dict'] = self.sparse_optimizer.state_dict()
@@ -118,7 +120,7 @@ class sstDataset(Dataset):
         return vector
 
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
@@ -133,7 +135,6 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s)
         # pdb.set_trace()
         loss = criterion(output, target)
-	print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -142,12 +143,21 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'sstTrained.pth')
+            for (dev_data, dev_target) in enumerate(devLoader):
+                sd = dev_data
+                sd = sd.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+                if(use_cuda):
+                    sd, dev_target = Variable(sd.cuda()), Variable(dev_target.cuda())
+                else:
+                    sd, dev_target = Variable(sd), Variable(dev_target)
+                    dev_output = model(sd)
+                    dev_loss = criterion(dev_output, dev_target)
+            save(model, optimizer, loss, 'sstTrained.pth', dev_loss)
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
 
 
 def main():
@@ -187,10 +197,12 @@ def main():
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)
     print('Time taken - ',time.time()-t1)
-    # devDataset = sstDataset(nliPathDev, glovePath)
+    devDataset = sstDataset(sstPathDev, glovePath)
+
+    devbatchSize = len(devDataset)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    # devLoader = DataLoader(testingDataset, battrainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)chSize, num_workers = numWorkers)
+    devLoader = DataLoader(testingDataset, devbatchSize, num_workers = numWorkers)
 
     # for batch_idx, (data, target) in enumerate(trainLoader):
     #     print(batch_idx,' data - ',data,' target - ',target)
@@ -213,7 +225,7 @@ def main():
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)
 
 
 
