@@ -142,7 +142,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            # save(model, optimizer, loss, 'snliTrained_f')
+            save(model, optimizer, loss, 'snliTrained_final.pth')
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
