@@ -60,7 +60,7 @@ class quoraNet(nn.Module):
         super(quoraNet, self).__init__()
         if which_to_use=="sst":
             loaded = torch.load(sst_path)['model_state_dict']
-            self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False)
+            self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, True)
             newModel=self.encoderQuora.state_dict()
             pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
             newModel.update(pretrained_dict)
@@ -137,7 +137,6 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output[-1], target)
-    print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:

@@ -1,0 +1,17 @@
+('Time taken - ', 167.09394311904907)
+{}
+('Epoch start - ', 0)
+Traceback (most recent call last):
+  File "./compTrainer.py", line 216, in <module>
+    main()
+  File "./compTrainer.py", line 211, in main
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
+  File "./compTrainer.py", line 153, in train
+    trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
+  File "./compTrainer.py", line 140, in trainEpoch
+    loss.backward()
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/autograd/variable.py", line 167, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, retain_variables)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/autograd/__init__.py", line 99, in backward
+    variables, grad_variables, retain_graph)
+RuntimeError: element 0 of variables tuple is volatile
