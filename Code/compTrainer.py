@@ -159,7 +159,7 @@ def main():
     quoraPathTrain = '../data/questionsTrain.csv'
     quoraPathDev = '../data/questionsDev.csv'
     
-    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
