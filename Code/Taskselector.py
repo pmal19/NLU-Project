@@ -16,7 +16,9 @@ class Taskselector(nn.Module):
 		self.init_linear=Linear()(hidden_dim*2, num_source_tasks, bias=True)
 
 	def forward(self, se, n_tasks):
-		se=torch.cat(se, dim=2)
+		print("Taskselector forward")
+		se=torch.cat(se, dim=1)
+		pdb.set_trace()
 		se_prerelu=self.init_linear(se)
 		se_postrelu=F.relu(se_prerelu)
 		logits=F.log_softmax(se_postrelu)
@@ -56,10 +58,9 @@ class Taskselector(nn.Module):
 	    """
 	    def convert_to_one_hot(indices, num_classes):
 	    	batch_size = indices.size(0)
-			indices = indices.unsqueeze(1)
-			one_hot = Variable(indices.data.new(batch_size, num_classes).zero_()
-			                       .scatter_(1, indices.data, 1))
-			return one_hot
+	    	indices = indices.unsqueeze(1)
+	    	one_hot = Variable(indices.data.new(batch_size, num_classes).zero_().scatter_(1, indices.data, 1))
+	    	return one_hot
 
 	    eps = 1e-20
 	    u = logits.data.new(*logits.size()).uniform_()

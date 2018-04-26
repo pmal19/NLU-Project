@@ -66,7 +66,7 @@ class nliNet(nn.Module):
         u1 = self.encoderNli(s1)
         v1 = self.encoderNli(s2)
         # pdb.set_trace()
-        features = torch.cat((u1, v1), 2)
+        features = torch.cat((u1, v1), 2)[-1]
         output = self.classifierNli(features)
         return output
 
@@ -128,7 +128,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         optimizer.zero_grad()
         output = model(s1, s2)
         # pdb.set_trace()
-        loss = criterion(output[-1], target)
+        loss = criterion(output, target)
 	# print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
@@ -138,7 +138,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'snliTrained_f')
+            # save(model, optimizer, loss, 'snliTrained_f')
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
@@ -148,9 +148,13 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    nliPathTrain = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_train.jsonl'
-    nliPathDev = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_dev.jsonl'
-    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    # nliPathTrain = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_train.jsonl'
+    # nliPathDev = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_dev.jsonl'
+    # glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+
+    nliPathTrain="../../Data/snli_1.0/snliSmallaa"
+    nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
