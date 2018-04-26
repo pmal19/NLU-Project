@@ -16,7 +16,7 @@ class Taskselector(nn.Module):
 		self.init_linear=Linear()(hidden_dim*2, num_source_tasks, bias=True)
 
 	def forward(self, se, n_tasks):
-		print("Taskselector forward")
+		# print("Taskselector forward")
 		se=torch.cat(se, dim=1)
 		se_prerelu=self.init_linear(se)
 		se_postrelu=F.relu(se_prerelu)

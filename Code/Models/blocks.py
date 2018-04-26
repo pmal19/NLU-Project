@@ -484,7 +484,8 @@ class LSTM(nn.Module):
                         num_layers * bi,
                         batch_size,
                         model_dim // bi),
-                    volatile=not self.training))
+                    # volatile=not self.training))
+                    requires_grad=self.training))
         if c0 is None:
             c0 = to_gpu(
                 Variable(
@@ -492,7 +493,8 @@ class LSTM(nn.Module):
                         num_layers * bi,
                         batch_size,
                         model_dim // bi),
-                    volatile=not self.training))
+                    # volatile=not self.training))
+                    requires_grad=self.training))
 
         # Expects (input, h_0, c_0):
         #   input => seq_len x batch_size x model_dim
