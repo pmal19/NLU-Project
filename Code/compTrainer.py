@@ -28,7 +28,7 @@ from readEmbeddings import *
 
 import pdb
 
-def save(model, optimizer, loss, filename, dev_loss):
+def save(model, optimizer, loss, filename):
     # if the_gpu() >= 0:
     #     recursively_set_device(self.model.state_dict(), gpu=-1)
     #     recursively_set_device(self.optimizer.state_dict(), gpu=-1)
@@ -37,7 +37,7 @@ def save(model, optimizer, loss, filename, dev_loss):
     save_dict = {
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
-        'dev_loss': dev_loss.data[0],
+        # 'dev_loss': dev_loss.data[0],
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
@@ -148,14 +148,14 @@ def trainEpoch(epoch, break_val, trainLoader, devLoader, model, optimizer, crite
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            for dev_data, dev_target in devLoader:
-                s1_d,s2_d = dev_data
-                s1_d = s1_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
-                s2_d = s2_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
-                s1_d, s2_d, dev_target = Variable(s1_d), Variable(s2_d), Variable(dev_target)
-                dev_output = model(s1_d, s2_d)
-                dev_loss = criterion(dev_output[-1], dev_target)
-            save(model, optimizer, loss, 'combTrainersstQuora', dev_loss)
+            # for dev_data, dev_target in devLoader:
+            #     s1_d,s2_d = dev_data
+            #     s1_d = s1_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+            #     s2_d = s2_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+            #     s1_d, s2_d, dev_target = Variable(s1_d), Variable(s2_d), Variable(dev_target)
+            #     dev_output = model(s1_d, s2_d)
+            #     dev_loss = criterion(dev_output[-1], dev_target)
+            save(model, optimizer, loss, 'combTrainersstQuora')
 
 
 def train(numEpochs, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize):
