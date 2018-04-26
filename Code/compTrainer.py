@@ -137,7 +137,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output[-1], target)
-    print(batch_idx,loss.data[0])
+    # print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
