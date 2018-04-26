@@ -1,0 +1,5 @@
+('Time taken - ', 167.16526103019714)
+('Epoch start - ', 0)
+Train Epoch: 0 [0/324352 (0%)]	Loss: 0.808650
+Train Epoch: 0 [200/324352 (2%)]	Loss: 0.730731
+Train Epoch: 0 [400/324352 (4%)]	Loss: 0.598940
