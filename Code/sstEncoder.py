@@ -14,6 +14,7 @@ from PIL import Image
 from torch.autograd import Variable
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
+import torch.backends.cudnn as cudnn
 #from torchvision import transforms, utils
 # from itertools import accumulate
 
@@ -68,7 +69,7 @@ class sstNet(nn.Module):
         u1 = self.encoderSst(s)
         # pdb.set_trace()
         # features = torch.cat((u1, v1), 2)
-        features = u1
+        features = u1[-1]
         output = self.classifierSst(features)
         return output
 
@@ -117,18 +118,21 @@ class sstDataset(Dataset):
         return vector
 
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
         s = data
         batchSize, _ = s.shape
         s = s.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
-        s, target = Variable(s), Variable(target)
+        if(use_cuda):
+            s, target = Variable(s.cuda()), Variable(target.cuda())
+        else:
+            s, target = Variable(s), Variable(target)
         optimizer.zero_grad()
         output = model(s)
         # pdb.set_trace()
-        loss = criterion(output[-1], target)
+        loss = criterion(output, target)
 	print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
@@ -138,12 +142,12 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'sstTrained')
+            save(model, optimizer, loss, 'sstTrained.pth')
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda)
 
 
 def main():
@@ -176,6 +180,9 @@ def main():
 
     training = True
 
+    use_cuda = torch.cuda.is_available()
+    if(use_cuda):
+        the_gpu.gpu = 0
 
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)
@@ -197,14 +204,16 @@ def main():
 
 
     model = sstNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
-
-    criterion = nn.CrossEntropyLoss()
+    if(use_cuda):
+        model.cuda()
+    
+    criterion = nn.CrossEntropyLoss().cuda()
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda)
 
 
 
