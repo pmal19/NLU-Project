@@ -37,7 +37,7 @@ def save(model, optimizer, loss, filename, dev_loss):
     save_dict = {
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
-        'dev_loss': dev_loss,
+        'dev_loss': dev_loss.data[0],
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
@@ -149,11 +149,11 @@ def trainEpoch(epoch, break_val, trainLoader, devLoader, model, optimizer, crite
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
             dev_data, dev_target = devLoader
-            s1,s2 = dev_data
-            s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
-            s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
-            s1, s2, dev_target = Variable(s1), Variable(s2), Variable(dev_target)
-            dev_output = model(s1, s2)
+            s1_d,s2_d = dev_data
+            s1_d = s1_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+            s2_d = s2_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+            s1_d, s2_d, dev_target = Variable(s1_d), Variable(s2_d), Variable(dev_target)
+            dev_output = model(s1_d, s2_d)
             dev_loss = criterion(dev_output[-1], dev_target)
             save(model, optimizer, loss, 'combTrainersstQuora', dev_loss)
 
@@ -192,8 +192,8 @@ def main():
     t1 = time.time()
     trainingDataset = qoraDataset(quoraPathTrain, glovePath)
     print('Time taken - ',time.time()-t1)
-    devDataset = qoraDataset(nliPathDev, glovePath)
-    devbatchSize = __len__(devDataset)
+    devDataset = qoraDataset(quoraPathDev, glovePath)
+    devbatchSize = len(devDataset)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
     devLoader = DataLoader(devDataset, devbatchSize, num_workers = numWorkers)

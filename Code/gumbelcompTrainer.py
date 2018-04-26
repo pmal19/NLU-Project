@@ -119,7 +119,7 @@ class GumbelNet(nn.Module):
         super(GumbelNet, self).__init__()
         self.encoder1=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, path1, "","", "sst")
         self.encoder2=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, "", "", path2,"quora")
-        self.task_selector=Taskselector(model_dim , 2)
+        self.task_selector=task_selector.Taskselector(model_dim , 2)
         self.classifierNli = MLP(model_dim*4, model_dim, 3, 2, True, dropout, training)
     def forward(self, s1, s2):
         a1=self.encoder1(s1)
