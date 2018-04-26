@@ -122,7 +122,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
         s1, s2 = data
-	batchSize, _ = s1.shape
+        batchSize, _ = s1.shape
         s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         if(use_cuda):
