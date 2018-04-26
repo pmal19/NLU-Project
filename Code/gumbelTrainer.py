@@ -188,8 +188,8 @@ def main():
     # nliPathDev="/scratch/am8676/snli_1.0/snli_1.0_dev.jsonl"
     # glovePath = '/scratch/am8676/glove.840B.300d.txt'
 
-    nliPathTrain="../../Data/snli_1.0/snli_1.0_train.jsonl"
-    nliPathDev="../../Data/snli_1.0/snli_1.0_dev.jsonl"
+    nliPathTrain="../../Data/snli_1.0/snliSmallaa"
+    nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
     glovePath = '../../glove.6B/glove.6B.300d.txt'
 
     batchSize = 64
