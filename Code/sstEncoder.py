@@ -145,6 +145,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
                 100. * batch_idx / len(trainLoader), loss.data[0]))
             for (dev_data, dev_target) in enumerate(devLoader):
                 sd = dev_data
+                devbatchSize, _ = sd.shape
                 sd = sd.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
                 if(use_cuda):
                     sd, dev_target = Variable(sd.cuda()), Variable(dev_target.cuda())
