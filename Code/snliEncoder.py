@@ -14,6 +14,7 @@ from PIL import Image
 from torch.autograd import Variable
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
+import torch.backends.cudnn as cudnn
 #from torchvision import transforms, utils
 
 sys.path.insert(0, '../../')
@@ -116,7 +117,7 @@ class nliDataset(Dataset):
         return vector
 
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
@@ -124,7 +125,10 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
 	batchSize, _ = s1.shape
         s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
-        s1, s2, target = Variable(s1), Variable(s2), Variable(target)
+        if(use_cuda):
+            s1, s2, target = Variable(s1.cuda()), Variable(s2.cuda()), Variable(target.cuda())
+        else:
+            s1, s2, target = Variable(s1), Variable(s2), Variable(target)
         optimizer.zero_grad()
         output = model(s1, s2)
         # pdb.set_trace()
@@ -138,23 +142,23 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            # save(model, optimizer, loss, 'snliTrained_f')
+            save(model, optimizer, loss, 'snliTrained_final.pth')
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda)
 
 
 def main():
 
-    # nliPathTrain = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_train.jsonl'
-    # nliPathDev = '/scratch/pm2758/nlu/snli_1.0/snli_1.0_dev.jsonl'
-    # glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    nliPathTrain = '/scratch/sgm400/NLU_PROJECT/snli_1.0/snli_1.0_train.jsonl'
+    nliPathDev = '/scratch/sgm400/NLU_PROJECT/snli_1.0/snli_1.0_dev.jsonl'
+    glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
 
-    nliPathTrain="../../Data/snli_1.0/snliSmallaa"
-    nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
-    glovePath = '../../glove.6B/glove.6B.300d.txt'
+    # nliPathTrain="../../Data/snli_1.0/snliSmallaa"
+    # nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
+    # glovePath = '../../glove.6B/glove.6B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
@@ -179,7 +183,7 @@ def main():
 
     training = True
 
-
+    use_cuda = torch.cuda.is_available()
     t1 = time.time()
     trainingDataset = nliDataset(nliPathTrain, glovePath)
     print('Time taken - ',time.time()-t1)
@@ -200,14 +204,16 @@ def main():
 
 
     model = nliNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
+    if(use_cuda):
+        model.cuda()
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss().cuda()
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda)
 
 
 
