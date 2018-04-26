@@ -202,7 +202,7 @@ def main():
     devbatchSize = len(devDataset)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    devLoader = DataLoader(testingDataset, devbatchSize, num_workers = numWorkers)
+    devLoader = DataLoader(devDataset, devbatchSize, num_workers = numWorkers)
 
     # for batch_idx, (data, target) in enumerate(trainLoader):
     #     print(batch_idx,' data - ',data,' target - ',target)
