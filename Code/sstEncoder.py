@@ -152,10 +152,10 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    sstPathTrain = '/scratch/pm2758/nlu/trees/train.txt'
-    sstPathDev = '/scratch/pm2758/nlu/trees/dev.txt'
+    sstPathTrain = '/scratch/sgm400/NLU_PROJECT/trees/train.txt'
+    sstPathDev = '/scratch/sgm400/NLU_PROJECT/trees/dev.txt'
     
-    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
