@@ -137,7 +137,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output[-1], target)
-    print(batch_idx,loss.data[0])
+    # print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -159,7 +159,7 @@ def main():
     quoraPathTrain = '../data/questionsTrain.csv'
     quoraPathDev = '../data/questionsDev.csv'
     
-    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
