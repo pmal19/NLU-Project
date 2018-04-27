@@ -165,8 +165,8 @@ def main():
 
     #quoraPathTrain = '../data/questionsTrain.csv'
     #quoraPathDev = '../data/questionsDev.csv'
-    nliPathTrain="/scratch/am8676/snli_1.0/snli_1.0_train.jsonl"
-    glovePath = '/scratch/am8676/glove.840B.300d.txt'
+    nliPathTrain="/scratch/pm2758/nlu/snli_1.0/snli_smallaa"
+    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
