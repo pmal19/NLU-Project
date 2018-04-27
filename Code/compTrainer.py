@@ -37,11 +37,13 @@ def save(model, optimizer, loss, filename, dev_loss):
     save_dict = {
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
-        'dev_loss': dev_loss.data[0],
+        # 'best_dev_step': self.best_dev_step,
+
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
-        'loss': loss.data[0]
+        'loss': loss.data[0],
+        'devloss': dev_loss.data[0]
         }
     # if self.sparse_optimizer is not None:
     #     save_dict['sparse_optimizer_state_dict'] = self.sparse_optimizer.state_dict()
@@ -52,16 +54,19 @@ def save(model, optimizer, loss, filename, dev_loss):
     #     recursively_set_device(self.optimizer.state_dict(), gpu=the_gpu())
 
 
-
-
 class quoraNet(nn.Module):
     """docstring for quoraNet"""
     def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training, sst_path, nli_path, which_to_use):
         super(quoraNet, self).__init__()
         if which_to_use=="sst":
             loaded = torch.load(sst_path)['model_state_dict']
+<<<<<<< HEAD
             self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, True)
             newModel=self.encoderQuora.state_dict()
+=======
+            self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False)
+            newModel = self.encoderQuora.state_dict()
+>>>>>>> aac199b404e0b23ddfb176ff5daa36e52b70cf4a
             pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
             newModel.update(pretrained_dict)
             self.encoderQuora.load_state_dict(newModel)
@@ -75,7 +80,7 @@ class quoraNet(nn.Module):
         u1 = self.encoderQuora(s1)
         v1 = self.encoderQuora(s2)
         # pdb.set_trace()
-        features = torch.cat((u1, v1), 2)
+        features = torch.cat((u1, v1), 2)[-1]
         output = self.classifierQuora(features)
         return output
 
@@ -125,9 +130,7 @@ class qoraDataset(Dataset):
         return vector
 
 
-
-
-def trainEpoch(epoch, break_val, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize):
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
@@ -138,10 +141,15 @@ def trainEpoch(epoch, break_val, trainLoader, devLoader, model, optimizer, crite
         optimizer.zero_grad()
         output = model(s1, s2)
         # pdb.set_trace()
+<<<<<<< HEAD
         loss = criterion(output[-1], target)
 
     	# print(batch_idx,loss.data[0])
 
+=======
+        loss = criterion(output, target)
+    # print(batch_idx,loss.data[0])
+>>>>>>> aac199b404e0b23ddfb176ff5daa36e52b70cf4a
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
@@ -150,19 +158,12 @@ def trainEpoch(epoch, break_val, trainLoader, devLoader, model, optimizer, crite
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0]))
-            for dev_data, dev_target in devLoader:
-                s1_d,s2_d = dev_data
-                s1_d = s1_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
-                s2_d = s2_d.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
-                s1_d, s2_d, dev_target = Variable(s1_d), Variable(s2_d), Variable(dev_target)
-                dev_output = model(s1_d, s2_d)
-                dev_loss = criterion(dev_output[-1], dev_target)
-            save(model, optimizer, loss, 'combTrainersstQuora', dev_loss)
+            save(model, optimizer, loss, 'combTrainersstQuora')
 
 
-def train(numEpochs, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader, devLoader, model,optimizer,criterion,inp_dim,batchSize, devbatchSize)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
 
 
 def main():
@@ -194,12 +195,10 @@ def main():
     t1 = time.time()
     trainingDataset = qoraDataset(quoraPathTrain, glovePath)
     print('Time taken - ',time.time()-t1)
-    devDataset = qoraDataset(quoraPathDev, glovePath)
-    devbatchSize = len(devDataset)
+    # devDataset = qoraDataset(nliPathDev, glovePath)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    devLoader = DataLoader(devDataset, devbatchSize, num_workers = numWorkers)
-    
+    # devLoader = DataLoader(testingDataset, battrainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)chSize, num_workers = numWorkers)
 
     # for batch_idx, (data, target) in enumerate(trainLoader):
     #     print(batch_idx,' data - ',data,' target - ',target)
@@ -222,7 +221,7 @@ def main():
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, devLoader, model, optimizer, criterion, inp_dim, batchSize, devbatchSize)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
 
 
 

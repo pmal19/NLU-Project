@@ -5,6 +5,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import pdb
 sys.path.insert(0, '../../')
 sys.path.insert(0, '../')
 class Taskselector(nn.Module):
@@ -15,12 +16,20 @@ class Taskselector(nn.Module):
 		self.init_linear=Linear()(hidden_dim*2, num_source_tasks, bias=True)
 
 	def forward(self, se, n_tasks):
-		se=torch.cat(se, dim=2)
+		# print("Taskselector forward")
+		se=torch.cat(se, dim=1)
 		se_prerelu=self.init_linear(se)
 		se_postrelu=F.relu(se_prerelu)
 		logits=F.log_softmax(se_postrelu)
 		selector=self.st_gumbel_softmax(logits)
-		return torch.from_numpy(se*np.repeat(selector, self.hidden_dim))
+		r1 = selector[:,0]
+		r2 = selector[:,1]
+		r11 = r1.repeat(300,1)
+		r22 = r2.repeat(300,1)
+		rf = torch.cat((r11,r22),0).transpose(0,1)
+		#pdb.set_trace()
+		ret = se*rf
+		return ret
 	
 
 	def masked_softmax(self,logits, mask=None):
@@ -55,10 +64,9 @@ class Taskselector(nn.Module):
 	    """
 	    def convert_to_one_hot(indices, num_classes):
 	    	batch_size = indices.size(0)
-		indices = indices.unsqueeze(1)
-		one_hot = Variable(indices.data.new(batch_size, num_classes).zero_()
-		                       .scatter_(1, indices.data, 1))
-		return one_hot
+	    	indices = indices.unsqueeze(1)
+	    	one_hot = Variable(indices.data.new(batch_size, num_classes).zero_().scatter_(1, indices.data, 1))
+	    	return one_hot
 
 	    eps = 1e-20
 	    u = logits.data.new(*logits.size()).uniform_()
@@ -66,6 +74,7 @@ class Taskselector(nn.Module):
 	    y = logits + gumbel_noise
 	    y = self.masked_softmax(logits=y / temperature, mask=mask)
 	    y_argmax = y.max(1)[1]
+	    # pdb.set_trace()
 	    y_hard = convert_to_one_hot(
 	        indices=y_argmax,
 	        num_classes=y.size(1)).float()

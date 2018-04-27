@@ -14,6 +14,7 @@ from PIL import Image
 from torch.autograd import Variable
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
+import torch.backends.cudnn as cudnn
 #from torchvision import transforms, utils
 # from itertools import accumulate
 
@@ -28,7 +29,7 @@ from readEmbeddings import *
 
 import pdb
 
-def save(model, optimizer, loss, filename):
+def save(model, optimizer, loss, filename, dev_loss):
     # if the_gpu() >= 0:
     #     recursively_set_device(self.model.state_dict(), gpu=-1)
     #     recursively_set_device(self.optimizer.state_dict(), gpu=-1)
@@ -38,10 +39,12 @@ def save(model, optimizer, loss, filename):
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
         # 'best_dev_step': self.best_dev_step,
+
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
-        'loss': loss.data[0]
+        'loss': loss.data[0],
+        'devloss': dev_loss.data[0]
         }
     # if self.sparse_optimizer is not None:
     #     save_dict['sparse_optimizer_state_dict'] = self.sparse_optimizer.state_dict()
@@ -68,7 +71,7 @@ class sstNet(nn.Module):
         u1 = self.encoderSst(s)
         # pdb.set_trace()
         # features = torch.cat((u1, v1), 2)
-        features = u1
+        features = u1[-1]
         output = self.classifierSst(features)
         return output
 
@@ -117,41 +120,55 @@ class sstDataset(Dataset):
         return vector
 
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
         s = data
         batchSize, _ = s.shape
         s = s.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
-        s, target = Variable(s), Variable(target)
+        if(use_cuda):
+            s, target = Variable(s.cuda()), Variable(target.cuda())
+        else:
+            s, target = Variable(s), Variable(target)
         optimizer.zero_grad()
         output = model(s)
         # pdb.set_trace()
-        loss = criterion(output[-1], target)
-	print(batch_idx,loss.data[0])
+        loss = criterion(output, target)
         loss.backward()
         optimizer.step()
         if batch_idx == break_val:
             return
         if batch_idx % 100 == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+            dev_loss = 0
+            for idx, (dev_data, dev_target) in enumerate(devLoader):
+                sd = dev_data
+                # pdb.set_trace()
+                devbatchSize, _ = sd.shape
+                sd = sd.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+                if(use_cuda):
+                    sd, dev_target = Variable(sd.cuda()), Variable(dev_target.cuda())
+                else:
+                    sd, dev_target = Variable(sd), Variable(dev_target)
+                dev_output = model(sd)
+                dev_loss = criterion(dev_output, dev_target)
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
-                100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'sstTrained')
+                100. * batch_idx / len(trainLoader), loss.data[0], dev_loss.data[0]))
+            save(model, optimizer, loss, 'sstTrained.pth', dev_loss)
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
 
 
 def main():
 
-    sstPathTrain = '/scratch/pm2758/nlu/trees/train.txt'
-    sstPathDev = '/scratch/pm2758/nlu/trees/dev.txt'
+    sstPathTrain = '../../trees/train.txt'
+    sstPathDev = '../../trees/dev.txt'
     
-    glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
@@ -176,14 +193,19 @@ def main():
 
     training = True
 
+    use_cuda = torch.cuda.is_available()
+    if(use_cuda):
+        the_gpu.gpu = 0
 
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)
+    
+    devDataset = sstDataset(sstPathDev, glovePath)
     print('Time taken - ',time.time()-t1)
-    # devDataset = sstDataset(nliPathDev, glovePath)
+    devbatchSize = len(devDataset)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    # devLoader = DataLoader(testingDataset, battrainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)chSize, num_workers = numWorkers)
+    devLoader = DataLoader(devDataset, devbatchSize, num_workers = numWorkers)
 
     # for batch_idx, (data, target) in enumerate(trainLoader):
     #     print(batch_idx,' data - ',data,' target - ',target)
@@ -197,14 +219,16 @@ def main():
 
 
     model = sstNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
-
-    criterion = nn.CrossEntropyLoss()
+    if(use_cuda):
+        model.cuda()
+    
+    criterion = nn.CrossEntropyLoss().cuda()
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)
 
 
 

@@ -63,14 +63,17 @@ class TaskEncoder(nn.Module):
             loaded = torch.load(sst_path)['model_state_dict']
         elif which_to_use=="quora":
             loaded = torch.load(quora_path)['model_state_dict']
-        self.encoderTask = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False)
+        self.encoderTask = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
         newModel=self.encoderTask.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         newModel.update(pretrained_dict)
         self.encoderTask.load_state_dict(newModel)
 
     def forward(self, s):
-        return self.encode(s)
+        # print("TaskEncoder forward")
+        enc = self.encode(s)
+        # pdb.set_trace()
+        return enc[-1]
 
     def encode(self, s1):
         emb = self.encoderTask(s1)
@@ -117,8 +120,8 @@ class nliDataset(Dataset):
 class GumbelNet(nn.Module):
     def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, path1,path2, training=True):
         super(GumbelNet, self).__init__()
-        self.encoder1=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, path1, "","", "sst")
-        self.encoder2=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, "", "", path2,"quora")
+        self.encoder1=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False, path1, "","", "sst")
+        self.encoder2=TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False, "", "", path2,"quora")
         self.task_selector=task_selector.Taskselector(model_dim , 2)
         self.classifierNli = MLP(model_dim*4, model_dim, 3, 2, True, dropout, training)
     def forward(self, s1, s2):
@@ -128,7 +131,7 @@ class GumbelNet(nn.Module):
         a1=self.encoder1(s2)
         a2=self.encoder1(s2)
         m2=self.task_selector([a1,a2], 2)
-        enc_out=torch.cat([m1,m2], dim=2)
+        enc_out=torch.cat([m1,m2], dim=1)
         output=self.classifierNli(enc_out)
         return output
 
@@ -143,7 +146,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         optimizer.zero_grad()
         output = model(s1, s2)
         # pdb.set_trace()
-        loss = criterion(output[-1], target)
+        loss = criterion(output, target)
     	print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
@@ -165,8 +168,15 @@ def main():
 
     #quoraPathTrain = '../data/questionsTrain.csv'
     #quoraPathDev = '../data/questionsDev.csv'
+<<<<<<< HEAD
     nliPathTrain="/scratch/pm2758/nlu/snli_1.0/snli_smallaa"
     glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
+=======
+    nliPathTrain="../../Data/snli_1.0/snliSmallaa"
+    nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
+
+>>>>>>> aac199b404e0b23ddfb176ff5daa36e52b70cf4a
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
@@ -188,10 +198,10 @@ def main():
 
 
     t1 = time.time()
-    print('Time taken - ',time.time()-t1)
     # devDataset = qoraDataset(nliPathDev, glovePath)
     trainingDataset = nliDataset(nliPathTrain, glovePath)
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
+    print('Time taken - ',time.time()-t1)
 
     sst_path="sstTrained"
     nli_path="quoraTrained"

@@ -1,0 +1,7 @@
+('Time taken - ', 168.0600299835205)
+Traceback (most recent call last):
+  File "./compTrainer.py", line 228, in <module>
+    main()
+  File "./compTrainer.py", line 195, in main
+    devDataset = qoraDataset(nliPathDev, glovePath)
+NameError: global name 'nliPathDev' is not defined
