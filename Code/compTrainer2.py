@@ -25,6 +25,7 @@ from Models.blocks import *
 from data.dataparser import *
 from data.batcher import *
 from readEmbeddings import *
+# import Taskselector as task_selector
 
 import pdb
 
@@ -54,36 +55,29 @@ def save(model, optimizer, loss, filename, dev_loss):
     #     recursively_set_device(self.optimizer.state_dict(), gpu=the_gpu())
 
 
-class quoraNet(nn.Module):
+class TaskEncoder(nn.Module):
     """docstring for quoraNet"""
-    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training, sst_path, nli_path, which_to_use):
-        super(quoraNet, self).__init__()
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training, sst_path, nli_path, quora_path, which_to_use):
+        super(TaskEncoder, self).__init__()
         if which_to_use=="sst":
             loaded = torch.load(sst_path)['model_state_dict']
-            self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False)
-            newModel = self.encoderQuora.state_dict()
-            pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-            newModel.update(pretrained_dict)
-            self.encoderQuora.load_state_dict(newModel)
-            print(pretrained_dict)
-        #elif which_to_use=="nli":
-            #do something here.
-        self.classifierQuora = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
+        elif which_to_use=="quora":
+            loaded = torch.load(quora_path)['model_state_dict']
+        self.encoderTask = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
+        newModel = self.encoderTask.state_dict()
+        pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
+        newModel.update(pretrained_dict)
+        self.encoderTask.load_state_dict(newModel)
 
-    def forward(self, s1, s2):
-
-        u1 = self.encoderQuora(s1)
-        v1 = self.encoderQuora(s2)
+    def forward(self, s):
+        # print("TaskEncoder forward")
+        enc = self.encode(s)
         # pdb.set_trace()
-        features = torch.cat((u1, v1), 2)[-1]
-        output = self.classifierQuora(features)
-        return output
+        return enc[-1]
 
     def encode(self, s1):
-        emb = self.encoderQuora(s1)
+        emb = self.encoderTask(s1)
         return emb
-        
-
 
 
 class qoraDataset(Dataset):
@@ -124,42 +118,86 @@ class qoraDataset(Dataset):
                 vector = np.concatenate((vector, [0]*len(self.vocab['a'])), axis=0)
         return vector
 
+class CompNet(nn.Module):
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, path1,path2, training=True):
+        super(CompNet, self).__init__()
+        self.encoder1 = TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False, path1, "","", "sst")
+        # self.encoder2 = TaskEncoder(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False, "", "", path2,"quora")
+        # self.task_selector=task_selector.Taskselector(model_dim , 2)
+        self.compMLP = MLP(model_dim*2, model_dim, 3, 2, True, dropout, training)
+    def forward(self, s1, s2):
+        a1 = self.encoder1(s1)
+        a2 = self.encoder1(s1)
+        # m1=self.task_selector([a1,a2], 2)
+        # a1=self.encoder1(s2)
+        # a2=self.encoder1(s2)
+        # m2=self.task_selector([a1,a2], 2)
+        # enc_out = torch.cat([m1,m2], dim=1)
+        # pdb.set_trace()
+        features = torch.cat((a1, a2), 1)
+        output = self.compMLP(features)
+        return output
 
-def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+
+def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
         #pdb.set_trace()
         s1, s2 = data
+        batchSize, _ = s1.shape
         s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
         s2 = s2.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
-        s1, s2, target = Variable(s1), Variable(s2), Variable(target)
+        if(use_cuda):
+            s1, s2, target = Variable(s1.cuda()), Variable(s2.cuda()), Variable(target.cuda())
+        else:
+            s1, s2, target = Variable(s1), Variable(s2), Variable(target)
         optimizer.zero_grad()
         output = model(s1, s2)
         # pdb.set_trace()
         loss = criterion(output, target)
-    # print(batch_idx,loss.data[0])
         loss.backward()
         optimizer.step()
+        # print("loss backward")
         if batch_idx == break_val:
             return
         if batch_idx % 100 == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+            dev_loss = 0
+            for idx, (dev_data, dev_target) in enumerate(devLoader):
+                sd1, sd2 = dev_data
+                # pdb.set_trace()
+                devbatchSize, _ = sd1.shape
+                sd1 = sd1.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+                sd2 = sd2.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+                if(use_cuda):
+                    sd1, sd2, dev_target = Variable(sd1.cuda()), Variable(sd2.cuda()), Variable(dev_target.cuda())
+                else:
+                    sd1, sd2, dev_target = Variable(sd1), Variable(sd2), Variable(dev_target)
+                dev_output = model(sd1, sd2)
+                dev_loss = criterion(dev_output, dev_target)
+                break
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
-                100. * batch_idx / len(trainLoader), loss.data[0]))
-            save(model, optimizer, loss, 'combTrainersstQuora')
+                100. * batch_idx / len(trainLoader), loss.data[0], dev_loss.data[0]))
+            save(model, optimizer, loss, 'compTrainerSSTonQuora.pth', dev_loss)
 
 
-def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize):
+def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize)
+        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
 
 
 def main():
 
     quoraPathTrain = '../data/questionsTrain.csv'
     quoraPathDev = '../data/questionsDev.csv'
-    
-    glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
+    nliPathTrain="../../Data/snli_1.0/snliSmallaa"
+    nliPathDev="../../Data/snli_1.0/snliSmallDevaa"
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
+
+    use_cuda = torch.cuda.is_available()
+    if(use_cuda):
+        the_gpu.gpu = 0
+
     batchSize = 64
     learningRate = 0.001
     momentum = 0.9
@@ -183,33 +221,31 @@ def main():
     t1 = time.time()
     trainingDataset = qoraDataset(quoraPathTrain, glovePath)
     print('Time taken - ',time.time()-t1)
-    # devDataset = qoraDataset(nliPathDev, glovePath)
+    devDataset = qoraDataset(quoraPathDev, glovePath)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    # devLoader = DataLoader(testingDataset, battrainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)chSize, num_workers = numWorkers)
-
-    # for batch_idx, (data, target) in enumerate(trainLoader):
-    #     print(batch_idx,' data - ',data,' target - ',target)
-    #     print(batch_idx,' data len - ',len(data),' target len - ',len(target))
-    #     s1, s2 = data
-    #     print(batch_idx,' data len s1 - ',len(s1),' data len s2 - ',len(s2))
-    #     print(batch_idx,' data len s1[0] - ',len(s1[0]),' data len s2[0] - ',len(s2[0]))
-    #     if batch_idx == 2:
-    #         break;
-    
+    devLoader = DataLoader(devDataset, len(devDataset)/1024, num_workers = numWorkers)
 
     sst_path="sstTrained"
-    nli_path="snliTrained"
-    which_to_use="sst"
-    model = quoraNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training, sst_path, nli_path, which_to_use)
+    nli_path="quoraTrained"
+    quora_path="quoraTrained"
+    #self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training=True
+    model = CompNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, sst_path, quora_path,training)
 
-    criterion = nn.CrossEntropyLoss()
+
+    if(use_cuda):
+        model.cuda()
+    if(use_cuda):
+        criterion = nn.CrossEntropyLoss().cuda()
+    else:
+        criterion = nn.CrossEntropyLoss()
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate)
     # # optimizer = optim.SGD(model.parameters(), lr = learningRate, momentum = momentum)
     # # optimizer = optim.Adam(model.parameters(), lr = learningRate)
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
-    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize)
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, len(devDataset))
+
 
 
 

@@ -140,19 +140,21 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
         if batch_idx == break_val:
             return
         if batch_idx % 100 == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(trainLoader.dataset),
-                100. * batch_idx / len(trainLoader), loss.data[0]))
-            for (dev_data, dev_target) in enumerate(devLoader):
+            dev_loss = 0
+            for idx, (dev_data, dev_target) in enumerate(devLoader):
                 sd = dev_data
+                # pdb.set_trace()
                 devbatchSize, _ = sd.shape
                 sd = sd.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
                 if(use_cuda):
                     sd, dev_target = Variable(sd.cuda()), Variable(dev_target.cuda())
                 else:
                     sd, dev_target = Variable(sd), Variable(dev_target)
-                    dev_output = model(sd)
-                    dev_loss = criterion(dev_output, dev_target)
+                dev_output = model(sd)
+                dev_loss = criterion(dev_output, dev_target)
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(trainLoader.dataset),
+                100. * batch_idx / len(trainLoader), loss.data[0], dev_loss.data[0]))
             save(model, optimizer, loss, 'sstTrained.pth', dev_loss)
 
 
@@ -163,10 +165,10 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    sstPathTrain = '/scratch/sgm400/NLU_PROJECT/trees/train.txt'
-    sstPathDev = '/scratch/sgm400/NLU_PROJECT/trees/dev.txt'
+    sstPathTrain = '../../trees/train.txt'
+    sstPathDev = '../../trees/dev.txt'
     
-    glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
+    glovePath = '../../glove.6B/glove.6B.300d.txt'
 
     batchSize = 64
     learningRate = 0.001
@@ -197,9 +199,9 @@ def main():
 
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)
-    print('Time taken - ',time.time()-t1)
+    
     devDataset = sstDataset(sstPathDev, glovePath)
-
+    print('Time taken - ',time.time()-t1)
     devbatchSize = len(devDataset)
 
     trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
