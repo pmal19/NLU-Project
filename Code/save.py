@@ -29,7 +29,7 @@ from readEmbeddings import *
 
 import pdb
 
-def save(model, optimizer, loss, filename, dev_loss):
+def save(model, optimizer, loss, filename, dev_loss, dev_acc = -1):
     save_dict = {
         # 'step': self.step,
         # 'best_dev_error': self.best_dev_error,
@@ -38,6 +38,7 @@ def save(model, optimizer, loss, filename, dev_loss):
         'optimizer_state_dict': optimizer.state_dict(),
         # 'vocabulary': self.vocabulary
         'loss': loss.data[0],
-        'devloss': dev_loss.data[0]
+        'devloss': dev_loss.data[0],
+        'dev_acc': dev_acc
         }
     torch.save(save_dict, filename)

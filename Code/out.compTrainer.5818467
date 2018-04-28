@@ -1,4 +1,0 @@
-  File "./compTrainer.py", line 141
-    loss.backward()
-    ^
-IndentationError: unexpected indent
