@@ -87,10 +87,10 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
                 dev_loss += criterion(dev_output, dev_target)
                 n_correct += (torch.max(dev_output, 1)[1].view(dev_target.size()) == dev_target).sum()
                 n_total += devbatchSize
-                break
+                # break
             dev_acc = (100. * n_correct.data[0])/n_total
 
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev Loss: {:.6f}\tDev Acc(1Batch): {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev Loss: {:.6f}\tDev Acc: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0], dev_loss.data[0], dev_acc))
             save(model, optimizer, loss, 'sstTrained.pth', dev_loss, dev_acc)
