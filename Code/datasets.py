@@ -65,9 +65,8 @@ class qoraDataset(Dataset):
 
 
 class sstDataset(Dataset):
-    def __init__(self, sstPath, glovePath, transform = None):
-    
-        self.data = dataparser.load_sst_data(sstPath)
+    def __init__(self, sstPath, glovePath, transform = None, training = True):
+        self.data = dataparser.load_sst_data(sstPath, (not training))
         self.paddingElement = ['<s>']
         self.maxSentenceLength = self.maxlength(self.data)
         self.vocab = glove2dict(glovePath)
