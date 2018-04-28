@@ -170,7 +170,7 @@ def main():
 
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)
-    devDataset = sstDataset(sstPathDev, glovePath)
+    devDataset = sstDataset(sstPathDev, glovePath, training = False)
     print('Time taken - ',time.time()-t1)
     devbatchSize = batchSize
 
