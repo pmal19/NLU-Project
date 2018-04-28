@@ -90,10 +90,10 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
                 dev_loss += criterion(dev_output, dev_target)
                 n_correct += (torch.max(dev_output, 1)[1].view(dev_target.size()) == dev_target).sum()
                 n_total += devbatchSize
-
+                break
             dev_acc = (100. * n_correct.data[0])/n_total
 
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev Loss: {:.6f}\tDev Accuracy: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\tDev Loss: {:.6f}\tDev Acc(1Batch): {:.6f}'.format(
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0], dev_loss.data[0], dev_acc))
             save(model, optimizer, loss, 'snliTrained.pth', dev_loss, dev_acc)
@@ -102,6 +102,26 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     for epoch in range(numEpochs):
         trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
+        dev_loss = 0
+        n_correct = 0
+        n_total = 0
+        for idx, (dev_data, dev_target) in enumerate(devLoader):
+            sd1, sd2 = dev_data
+            # pdb.set_trace()
+            devbatchSize, _ = sd1.shape
+            sd1 = sd1.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+            sd2 = sd2.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
+            if(use_cuda):
+                sd1, sd2, dev_target = Variable(sd1.cuda()), Variable(sd2.cuda()), Variable(dev_target.cuda())
+            else:
+                sd1, sd2, dev_target = Variable(sd1), Variable(sd2), Variable(dev_target)
+            dev_output = model(sd1, sd2)
+            dev_loss += criterion(dev_output, dev_target)
+            n_correct += (torch.max(dev_output, 1)[1].view(dev_target.size()) == dev_target).sum()
+            n_total += devbatchSize
+        dev_acc = (100. * n_correct.data[0])/n_total
+        print('Epoch: {} - Dev Accuracy: {}'.format(epoch, dev_acc))
+        save(model, optimizer, loss, 'snliTrainedEpoch.pth', dev_loss, dev_acc)
 
 
 def main():
@@ -156,10 +176,10 @@ def main():
     trainingDataset = nliDataset(nliPathTrain, glovePath)
     devDataset = nliDataset(nliPathDev, glovePath)
     print('Time taken - ',time.time()-t1)
-    devbatchSize = len(devDataset)
+    devbatchSize = batchSize
 
-    trainLoader = DataLoader(trainingDataset, batchSize, num_workers = numWorkers)
-    devLoader = DataLoader(devDataset, devbatchSize, num_workers = numWorkers)
+    trainLoader = DataLoader(trainingDataset, batchSize, shuffle=True, num_workers = numWorkers)
+    devLoader = DataLoader(devDataset, devbatchSize, shuffle=True, num_workers = numWorkers)
 
     model = nliNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
     if(use_cuda):
