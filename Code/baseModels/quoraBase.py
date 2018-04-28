@@ -97,11 +97,12 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
                 epoch, batch_idx * len(data), len(trainLoader.dataset),
                 100. * batch_idx / len(trainLoader), loss.data[0], dev_loss.data[0], dev_acc))
             save(model, optimizer, loss, 'quoraTrained.pth', dev_loss, dev_acc)
+    return loss
 
 
 def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     for epoch in range(numEpochs):
-        trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
+        loss = trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
         dev_loss = 0
         n_correct = 0
         n_total = 0
