@@ -1,7 +1,0 @@
-('Time taken - ', 181.39338088035583)
-Traceback (most recent call last):
-  File "./compTrainer.py", line 228, in <module>
-    main()
-  File "./compTrainer.py", line 196, in main
-    devbatchSize = __len__(devDataset)
-NameError: global name '__len__' is not defined

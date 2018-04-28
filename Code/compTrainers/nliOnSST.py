@@ -107,8 +107,8 @@ def main():
     else:
         quoraPathTrain = '../../data/questionsTrain.csv'
         quoraPathDev = '../../data/questionsDev.csv'
-        nliPathTrain = "/scratch/pm2758/nlu/snli_1.0/snliSmallaa"
-        nliPathDev = "/scratch/pm2758/nlu/snli_1.0/snliSmallDevaa"
+        nliPathTrain = "/scratch/pm2758/nlu/snli_1.0/snli_1.0_train.jsonl"
+        nliPathDev = "/scratch/pm2758/nlu/snli_1.0/snli_1.0_dev.jsonl"
         sstPathTrain = "/scratch/pm2758/nlu/trees/train.txt"
         sstPathDev = "/scratch/pm2758/nlu/trees/dev.txt"
         glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
