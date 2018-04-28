@@ -38,8 +38,8 @@ def load_nli_data(path, choose=lambda x: True):
     return examples
 
 def load_sst_data(
-        path):
-    dataset = convert_unary_binary_bracketed_data(path)
+        path, top_node_only=True):
+    dataset = convert_unary_binary_bracketed_data(path, top_node_only=top_node_only)
     return dataset
 
 def load_quora_data(path):
