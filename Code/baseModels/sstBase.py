@@ -32,18 +32,33 @@ from TaskEncoder import *
 
 import pdb
 
+class ClassLSTM(nn.Module):
+    """docstring for ClassLSTM"""
+    def __init__(self, input_size, hidden_size, num_layers, batch, bias = True, batch_first = False, dropout = 0, bidirectional = False):
+        super(ClassLSTM, self).__init__()
+        self.num_directions = 2 if bidirectional else 1
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers, bias = True, batch_first = False, dropout = dropout, bidirectional = False)
+        self.h0 = Variable(torch.randn(num_layers * self.num_directions, batch, hidden_size))
+        self.c0 = Variable(torch.randn(num_layers * self.num_directions, batch, hidden_size))
+    def forward(self, s1):
+        output, hn = self.lstm(s1, (self.h0, self.c0))
+        return output
+        
+
+
 class sstNet(nn.Module):
     """docstring for sstNet"""
-    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training):
+    def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training, batchSize):
         super(sstNet, self).__init__()
         # self.num_layers=num_layers
         # self.model_dim=model_dim
         # self.training=training
         # self.v_rnn=nn.LSTM(inp_dim, model_dim, num_layers=num_layers, batch_first=True)
-        self.encoderSst = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
+        # self.encoderSst = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
+        self.encoderSst = ClassLSTM(inp_dim, model_dim, num_layers, batchSize, bidirectional = bidirectional, dropout = dropout)
         self.classifierSst = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
 
-    def forward(self, s):
+    def forward(self, s1):
         # batch_size, seq_len = s.size()[:2]
         # h0=Variable(
         #     torch.zeros(self.num_layers,
@@ -54,9 +69,11 @@ class sstNet(nn.Module):
         #          batch_size, self.model_dim), requires_grad=not self.training
         #     )
         # o, (hn, _) = self.v_rnn(s.float(), (h0, c0))
-        hn, output = self.encoderSst(s)
+
+        # hn, output = self.encoderSst(s1)
+        oE = self.encoderSst(s1)
         #features = hn.squeeze()
-        features=output[-1]
+        features = oE[-1]
         output = F.log_softmax(self.classifierSst(features))
         # pdb.set_trace()
         return output
@@ -69,18 +86,18 @@ class sstNet(nn.Module):
 def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize):
     print("Epoch start - ",epoch)
     for batch_idx, (data, target) in enumerate(trainLoader):
-        #pdb.set_trace()
-        s = data
-        batchSize, _ = s.shape
-        s = s.transpose(0,1).contiguous().view(-1,inp_dim,batchSize).transpose(1,2)
+        s1 = data.float()
+        batch, _ = s1.shape
+        if batchSize != batch:
+            break
+        s1 = s1.transpose(0,1).contiguous().view(-1,inp_dim,batch).transpose(1,2)
         if(use_cuda):
-            s, target = Variable(s.cuda()), Variable(target.cuda())
+            s1, target = Variable(s1.cuda()), Variable(target.cuda())
         else:
-            s, target = Variable(s), Variable(target)
-        
-        output = model(s)
-        model.zero_grad()
+            s1, target = Variable(s1), Variable(target)
         # pdb.set_trace()
+        output = model(s1)
+        model.zero_grad()
         loss = criterion(output, target)
         loss.backward()
         optimizer.step()
@@ -91,9 +108,11 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             n_correct = 0
             n_total = 0
             for idx, (dev_data, dev_target) in enumerate(devLoader):
-                sd = dev_data
+                sd = dev_data.float()
                 # pdb.set_trace()
                 devbatchSize, _ = sd.shape
+                if batchSize != devbatchSize:
+                    break
                 sd = sd.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
                 if(use_cuda):
                     sd, dev_target = Variable(sd.cuda()), Variable(dev_target.cuda())
@@ -195,7 +214,7 @@ def main():
     trainLoader = DataLoader(trainingDataset, batchSize, shuffle=False, num_workers = numWorkers)
     devLoader = DataLoader(devDataset, devbatchSize, shuffle=False, num_workers = numWorkers)
 
-    model = sstNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
+    model = sstNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training, batchSize)
     if(use_cuda):
         model.cuda()
     if(use_cuda):
