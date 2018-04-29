@@ -191,8 +191,8 @@ def main():
     training = True
 
     use_cuda = torch.cuda.is_available()
-    if(use_cuda):
-        the_gpu.gpu = 0
+    # if(use_cuda):
+    #     the_gpu.gpu = 0
 
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)
