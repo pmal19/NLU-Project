@@ -1,0 +1,23 @@
+SST eval mode: Preserving only top node label.
+('Time taken - ', 342.2340669631958)
+('Epoch start - ', 0)
+./sstBase.py:46: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  output = F.softmax(self.classifierSst(features))
+Traceback (most recent call last):
+  File "./sstBase.py", line 195, in <module>
+    main()
+  File "./sstBase.py", line 190, in main
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)
+  File "./sstBase.py", line 104, in train
+    loss = trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
+  File "./sstBase.py", line 68, in trainEpoch
+    loss = criterion(output, target)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/loss.py", line 601, in forward
+    self.ignore_index, self.reduce)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/functional.py", line 1140, in cross_entropy
+    return nll_loss(log_softmax(input, 1), target, weight, size_average, ignore_index, reduce)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/functional.py", line 1053, in nll_loss
+    raise ValueError('Expected 2 or 4 dimensions (got {})'.format(dim))
+ValueError: Expected 2 or 4 dimensions (got 3)
