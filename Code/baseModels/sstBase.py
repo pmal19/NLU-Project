@@ -202,6 +202,7 @@ def main():
     training = True
 
     use_cuda = torch.cuda.is_available()
+    use_cuda = False
     if(use_cuda):
         the_gpu.gpu = 0
 
