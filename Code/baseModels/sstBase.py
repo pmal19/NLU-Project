@@ -42,7 +42,7 @@ class sstNet(nn.Module):
     def forward(self, s):
 
         u1 = self.encoderSst(s)
-        features = u1[-1]
+        features = u1
         output = F.softmax(self.classifierSst(features))
         return output
 
@@ -85,8 +85,8 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
                     sd, dev_target = Variable(sd), Variable(dev_target)
                 dev_output = model(sd)
                 dev_loss += criterion(dev_output, dev_target)
-		if idx == 0:
-			print(dev_output)
+		# if idx == 0:
+		#	print(dev_output)
                 n_correct += (torch.max(dev_output, 1)[1].view(dev_target.size()) == dev_target).sum()
                 n_total += devbatchSize
                 # break
@@ -125,7 +125,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    local = False
+    local = True
 
     if(local):
         quoraPathTrain = '../../data/questionsTrain.csv'
