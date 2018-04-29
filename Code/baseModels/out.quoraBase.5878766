@@ -1,0 +1,22 @@
+('Time taken - ', 356.8175799846649)
+('Epoch start - ', 0)
+./quoraBase.py:47: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
+  output = F.softmax(self.classifierQuora(features))
+Train Epoch: 0 [0/324352 (0%)]	Loss: 1.431815	Dev Loss: 1.217541	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [200/324352 (2%)]	Loss: 1.311085	Dev Loss: 1.217339	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [400/324352 (4%)]	Loss: 1.217337	Dev Loss: 1.217337	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [600/324352 (6%)]	Loss: 1.279829	Dev Loss: 1.217347	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [800/324352 (8%)]	Loss: 1.295458	Dev Loss: 1.217337	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [1000/324352 (10%)]	Loss: 1.342327	Dev Loss: 1.217337	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [1200/324352 (12%)]	Loss: 1.389205	Dev Loss: 1.217338	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [1400/324352 (14%)]	Loss: 1.217336	Dev Loss: 1.217335	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [1600/324352 (16%)]	Loss: 1.232958	Dev Loss: 1.217344	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [1800/324352 (18%)]	Loss: 1.311083	Dev Loss: 1.217336	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [2000/324352 (20%)]	Loss: 1.295459	Dev Loss: 1.217340	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [2200/324352 (22%)]	Loss: 1.154840	Dev Loss: 1.217336	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [2400/324352 (24%)]	Loss: 1.248584	Dev Loss: 1.217339	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [2600/324352 (26%)]	Loss: 1.264208	Dev Loss: 1.217327	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [2800/324352 (28%)]	Loss: 1.451700	Dev Loss: 1.217338	Dev Acc(1Batch): 68.750000
+Train Epoch: 0 [3000/324352 (30%)]	Loss: 1.248586	Dev Loss: 1.217334	Dev Acc(1Batch): 68.750000
+slurmstepd: error: Exceeded job memory limit
+slurmstepd: error: *** JOB 5878766 ON gpu-66 CANCELLED AT 2018-04-28T19:57:53 ***

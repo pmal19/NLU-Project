@@ -42,7 +42,7 @@ class sstNet(nn.Module):
     def forward(self, s):
 
         u1 = self.encoderSst(s)
-        features = u1[-1]
+        features = u1[-1:]
         output = F.softmax(self.classifierSst(features))
         return output
 
@@ -62,7 +62,7 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             s, target = Variable(s.cuda()), Variable(target.cuda())
         else:
             s, target = Variable(s), Variable(target)
-        optimizer.zero_grad()
+        model.zero_grad()
         output = model(s)
         # pdb.set_trace()
         loss = criterion(output, target)
@@ -85,6 +85,8 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
                     sd, dev_target = Variable(sd), Variable(dev_target)
                 dev_output = model(sd)
                 dev_loss += criterion(dev_output, dev_target)
+		if idx == 0:
+			print(dev_output)
                 n_correct += (torch.max(dev_output, 1)[1].view(dev_target.size()) == dev_target).sum()
                 n_total += devbatchSize
                 # break
@@ -175,8 +177,8 @@ def main():
     print('Time taken - ',time.time()-t1)
     devbatchSize = batchSize
 
-    trainLoader = DataLoader(trainingDataset, batchSize, shuffle=True, num_workers = numWorkers)
-    devLoader = DataLoader(devDataset, devbatchSize, shuffle=True, num_workers = numWorkers)
+    trainLoader = DataLoader(trainingDataset, batchSize, shuffle=False, num_workers = numWorkers)
+    devLoader = DataLoader(devDataset, devbatchSize, shuffle=False, num_workers = numWorkers)
 
     model = sstNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
     if(use_cuda):
