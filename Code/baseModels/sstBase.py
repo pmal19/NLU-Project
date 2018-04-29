@@ -141,7 +141,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    local=True
+    local=False
     if(local):
         quoraPathTrain = '../../data/questionsTrain.csv'
         quoraPathDev = '../../data/questionsDev.csv'
