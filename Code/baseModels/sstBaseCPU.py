@@ -178,7 +178,7 @@ def main():
     model_dim = 300
     num_layers = 1
     reverse = False
-    bidirectional = True
+    bidirectional = False
     dropout = 0.1
 
     mlp_input_dim = 300
@@ -191,8 +191,9 @@ def main():
     training = True
 
     use_cuda = torch.cuda.is_available()
-    if(use_cuda):
-        the_gpu.gpu = 0
+    use_cuda = False
+    # if(use_cuda):
+    #     the_gpu.gpu = 0
 
     t1 = time.time()
     trainingDataset = sstDataset(sstPathTrain, glovePath)

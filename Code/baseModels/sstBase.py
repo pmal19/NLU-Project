@@ -178,7 +178,7 @@ def main():
     model_dim = 300
     num_layers = 1
     reverse = False
-    bidirectional = False
+    bidirectional = True
     dropout = 0.1
 
     mlp_input_dim = 300
