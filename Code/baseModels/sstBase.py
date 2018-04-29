@@ -30,20 +30,34 @@ from datasets import *
 from save import *
 from TaskEncoder import *
 
+import pdb
 
 class sstNet(nn.Module):
     """docstring for sstNet"""
     def __init__(self, inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training):
         super(sstNet, self).__init__()
-
+        # self.num_layers=num_layers
+        # self.model_dim=model_dim
+        # self.training=training
+        # self.v_rnn=nn.LSTM(inp_dim, model_dim, num_layers=num_layers, batch_first=True)
         self.encoderSst = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, training)
         self.classifierSst = MLP(mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
 
     def forward(self, s):
-
-        u1 = self.encoderSst(s)
-        features = u1
+        # batch_size, seq_len = s.size()[:2]
+        # h0=Variable(
+        #     torch.zeros(self.num_layers,
+        #          batch_size, self.model_dim), requires_grad=not self.training
+        #     )
+        # c0=Variable(
+        #     torch.zeros(self.num_layers,
+        #          batch_size, self.model_dim), requires_grad=not self.training
+        #     )
+        # o, (hn, _) = self.v_rnn(s.float(), (h0, c0))
+        hn, output = self.encoderSst(s)
+        features = hn.squeeze()
         output = F.softmax(self.classifierSst(features))
+        # pdb.set_trace()
         return output
 
     def encode(self, s):
@@ -125,7 +139,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    local = True
+    local = False
 
     if(local):
         quoraPathTrain = '../../data/questionsTrain.csv'
@@ -155,7 +169,7 @@ def main():
     model_dim = 300
     num_layers = 1
     reverse = False
-    bidirectional = True
+    bidirectional = False
     dropout = 0.1
 
     mlp_input_dim = 300
@@ -183,8 +197,10 @@ def main():
     model = sstNet(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, mlp_input_dim, mlp_dim, num_classes, num_mlp_layers, mlp_ln, classifier_dropout_rate, training)
     if(use_cuda):
         model.cuda()
-    
-    criterion = nn.CrossEntropyLoss().cuda()
+    if(use_cuda):
+        criterion = nn.CrossEntropyLoss().cuda()
+    else:
+        criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
     train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)

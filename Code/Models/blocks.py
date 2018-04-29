@@ -459,21 +459,20 @@ class LSTM(nn.Module):
         self.model_dim = model_dim
         self.reverse = reverse
         self.bidirectional = bidirectional
-        # self.bi = 2 if self.bidirectional else 1
-        self.bi = 1
+        self.bi = 2 if self.bidirectional else 1
         self.num_layers = num_layers
         self.training = training
-        self.rnn = nn.LSTM(inp_dim, model_dim // self.bi, num_layers=num_layers,
-                           batch_first=True,
+        self.rnn = nn.LSTM(inp_dim, model_dim , num_layers=num_layers,
+                           # batch_first=True,
                            bidirectional=self.bidirectional,
                            dropout=dropout)
 
     def forward(self, x, h0=None, c0=None):
         bi = self.bi
         num_layers = self.num_layers
-        batch_size, seq_len = x.size()[:2]
+        seq_len, batch_size  = x.size()[:2]
         model_dim = self.model_dim
-
+        # print(seq_len, batch_size, x.size())
         if self.reverse:
             x = reverse_tensor(x, dim=1)
 
@@ -484,7 +483,7 @@ class LSTM(nn.Module):
                     torch.zeros(
                         num_layers * bi,
                         batch_size,
-                        model_dim // bi),
+                        model_dim),
                     # volatile=not self.training))
                     requires_grad=self.training))
         if c0 is None:
@@ -493,7 +492,7 @@ class LSTM(nn.Module):
                     torch.zeros(
                         num_layers * bi,
                         batch_size,
-                        model_dim // bi),
+                        model_dim),
                     # volatile=not self.training))
                     requires_grad=self.training))
 
@@ -501,14 +500,15 @@ class LSTM(nn.Module):
         #   input => seq_len x batch_size x model_dim
         #   h_0   => (num_layers x bi[1,2]) x batch_size x model_dim
         #   c_0   => (num_layers x bi[1,2]) x batch_size x model_dim
-        #import pdb;pdb.set_trace()
+        # import pdb;pdb.set_trace()
         output, (hn, _) = self.rnn(x.float(), (h0, c0))
 
         if self.reverse:
             output = reverse_tensor(output, dim=1)
 
         # return output
-	return hn
+        
+        return hn, output
 
 
 class ReduceTreeLSTM(nn.Module):
