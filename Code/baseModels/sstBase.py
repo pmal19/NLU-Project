@@ -42,7 +42,7 @@ class sstNet(nn.Module):
     def forward(self, s):
 
         u1 = self.encoderSst(s)
-        features = u1[-1:]
+        features = u1[-1]
         output = F.softmax(self.classifierSst(features))
         return output
 
