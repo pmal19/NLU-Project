@@ -459,11 +459,11 @@ class LSTM(nn.Module):
         self.model_dim = model_dim
         self.reverse = reverse
         self.bidirectional = bidirectional
-        # self.bi = 2 if self.bidirectional else 1
-	self.bi = 1
+        self.bi = 2 if self.bidirectional else 1
+	# self.bi = 1
         self.num_layers = num_layers
         self.training = training
-        self.rnn = nn.LSTM(inp_dim, model_dim // self.bi, num_layers=num_layers,
+        self.rnn = nn.LSTM(inp_dim, model_dim , num_layers=num_layers,
                            batch_first=True,
                            bidirectional=self.bidirectional,
                            dropout=dropout)
