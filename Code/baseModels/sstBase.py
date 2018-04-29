@@ -160,7 +160,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    local=True
+    local=False
     if(local):
         quoraPathTrain = '../../data/questionsTrain.csv'
         quoraPathDev = '../../data/questionsDev.csv'
@@ -202,6 +202,7 @@ def main():
     training = True
 
     use_cuda = torch.cuda.is_available()
+    use_cuda = False
     if(use_cuda):
         the_gpu.gpu = 0
 
