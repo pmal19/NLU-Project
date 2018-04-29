@@ -55,8 +55,9 @@ class sstNet(nn.Module):
         #     )
         # o, (hn, _) = self.v_rnn(s.float(), (h0, c0))
         hn, output = self.encoderSst(s)
-        features = hn.squeeze()
-        output = F.softmax(self.classifierSst(features))
+        #features = hn.squeeze()
+        features=output[-1]
+        output = F.log_softmax(self.classifierSst(features))
         # pdb.set_trace()
         return output
 
@@ -76,8 +77,9 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             s, target = Variable(s.cuda()), Variable(target.cuda())
         else:
             s, target = Variable(s), Variable(target)
-        model.zero_grad()
+        
         output = model(s)
+        model.zero_grad()
         # pdb.set_trace()
         loss = criterion(output, target)
         loss.backward()
@@ -139,8 +141,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 def main():
 
-    local = False
-
+    local=True
     if(local):
         quoraPathTrain = '../../data/questionsTrain.csv'
         quoraPathDev = '../../data/questionsDev.csv'
@@ -201,6 +202,7 @@ def main():
         criterion = nn.CrossEntropyLoss().cuda()
     else:
         criterion = nn.CrossEntropyLoss()
+    criterion=nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr = learningRate, weight_decay = 1e-5)
 
     train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)
