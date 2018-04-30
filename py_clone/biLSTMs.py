@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 import torch.nn as nn
 import torch.nn.functional as F
+import pdb
 
 
 class BiLSTMSentiment(nn.Module):
@@ -44,8 +45,8 @@ class BiLSTMInference(nn.Module):
         self.batch_size = batch_size
         self.dropout = dropout
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.hidden2label = nn.Linear(hidden_dim*4, label_size)
+        self.lstmInference = nn.LSTM(input_size=embedding_dim*2, hidden_size=hidden_dim, bidirectional=True)
+        self.hidden2label = nn.Linear(hidden_dim*2, label_size)
         self.hidden = self.init_hidden()
 
     def init_hidden(self):
@@ -63,6 +64,7 @@ class BiLSTMInference(nn.Module):
         x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
         x = torch.cat((x1, x2), 2)
         lstm_out, self.hidden = self.lstmInference(x, self.hidden)
+        # pdb.set_trace()
         y = self.hidden2label(lstm_out[-1])
         log_probs = F.log_softmax(y)
         return log_probs
@@ -77,8 +79,8 @@ class BiLSTMDuplicate(nn.Module):
         self.batch_size = batch_size
         self.dropout = dropout
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.lstmDuplicate = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.hidden2label = nn.Linear(hidden_dim*4, label_size)
+        self.lstmDuplicate = nn.LSTM(input_size=embedding_dim*2, hidden_size=hidden_dim, bidirectional=True)
+        self.hidden2label = nn.Linear(hidden_dim*2, label_size)
         self.hidden = self.init_hidden()
 
     def init_hidden(self):

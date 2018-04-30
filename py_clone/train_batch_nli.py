@@ -59,10 +59,16 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     count = 0
     for batch in tqdm(train_iter, desc='Train epoch '+str(epoch+1)):
         sent1, sent2, label = batch.text1, batch.text2, batch.label
+        maxlen=max(sent1.shape[0], sent2.shape[1])
+        if(sent1.shape[0]==maxlen):
+            sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long()])
+        else:
+            sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long()])
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
+        # pdb.set_trace()
         pred = model(sent1, sent2)
         pred_label = pred.data.max(1)[1].numpy()
         pred_res += [x for x in pred_label]
@@ -131,11 +137,11 @@ def load_nli(text_field, label_field, batch_size):
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
-    train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: data.interleave_keys(len(x.text1),len(x.text2)), repeat=False, device=-1)
+    # train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
+    #             batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: data.interleave_keys(len(x.text1),len(x.text2)), repeat=False, device=-1)
     ## for GPU run
-#     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-#                 batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=None)
+    train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
+                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: max(len(x.text1),len(x.text2)), repeat=False, device=None)
     return train_iter, dev_iter, test_iter
 
 
