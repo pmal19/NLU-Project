@@ -98,7 +98,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    acc = tot_correct.cpu()/tot_samples.cpu()
+    acc = tot_correct.data.cpu()/tot_samples.data.cpu()
     return avg_loss, acc
 
 
