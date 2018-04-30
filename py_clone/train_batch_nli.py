@@ -54,7 +54,7 @@ def get_accuracy(truth, pred):
 
 def get_accuracy2(tot_correct, tot_samples, label, pred):
     tot_correct += (torch.max(pred, 1)[1].view(label.size()) == label).sum()
-    tot_samples += float(label.shape[0])
+    tot_samples += (label.shape[0])
     return tot_correct, tot_samples
 
 
