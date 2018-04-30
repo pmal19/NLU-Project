@@ -52,38 +52,53 @@ def get_accuracy(truth, pred):
             right += 1.0
     return right / len(truth)
 
+def get_accuracy2(tot_correct, tot_samples, label, pred):
+    tot_correct += (torch.max(pred, 1)[1].view(label.size()) == label).sum()
+    tot_samples += float(label.shape[0])
+    return tot_correct, tot_samples
 
-def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch):
+
+def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU):
     model.train()
     avg_loss = 0.0
     truth_res = []
     pred_res = []
+    tot_correct = 0.0
+    tot_samples = 0.0
     count = 0
     for batch in tqdm(train_iter, desc='Train epoch '+str(epoch+1)):
         sent1, sent2, label = batch.text1, batch.text2, batch.label
         maxlen=max(sent1.shape[0], sent2.shape[0])
-	sent1, sent2 = sent1.cuda(), sent2.cuda()
+        if USE_GPU:
+            sent1, sent2, label = sent1.cuda(), sent2.cuda(), label.cuda()
         if(sent1.shape[0]==maxlen):
-            sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long().cuda()])
+            if USE_GPU:
+                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long().cuda()])    
+            else:
+                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long()])
         else:
-            sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long().cuda()])
-	# sent1, sent2 = sent1.cuda(), sent2.cuda()
+            if USE_GPU:
+                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long().cuda()])
+            else:
+                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long()])
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
-        # pdb.set_trace()
         pred = model(sent1, sent2)
-        pred_label = pred.data.max(1)[1].numpy()
-        pred_res += [x for x in pred_label]
+        # pdb.set_trace()
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
         count += 1
         loss.backward()
         optimizer.step()
+        tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(train_iter)
-    acc = get_accuracy(truth_res, pred_res)
+    # acc = get_accuracy(truth_res, pred_res)
+    acc = tot_correct*100./tot_samples
     return avg_loss, acc
 
 
@@ -113,30 +128,41 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
 #     return avg_loss, acc
 
 
-def evaluate(model, data, loss_function, name):
+def evaluate(model, data, loss_function, name, USE_GPU):
     model.eval()
     avg_loss = 0.0
     truth_res = []
     pred_res = []
+    tot_correct = 0.0
+    tot_samples = 0.0
     for batch in data:
         sent1, sent2, label = batch.text1, batch.text2, batch.label
         maxlen=max(sent1.shape[0], sent2.shape[0])
+        if USE_GPU:
+            sent1, sent2, label = sent1.cuda(), sent2.cuda(), label.cuda()
         if(sent1.shape[0]==maxlen):
-            sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long()])
+            if USE_GPU:
+                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long().cuda()])    
+            else:
+                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long()])
         else:
-            sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long()])
-	sent1, sent2 = sent1.cuda(), sent2.cuda()
+            if USE_GPU:
+                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long().cuda()])
+            else:
+                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long()])
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
         pred = model(sent1, sent2)
-        pred_label = pred.data.max(1)[1].numpy()
-        pred_res += [x for x in pred_label]
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
+        tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(data)
-    acc = get_accuracy(truth_res, pred_res)
+    # acc = get_accuracy(truth_res, pred_res)
+    acc = tot_correct*100./tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
@@ -216,9 +242,9 @@ print("Writing to {}\n".format(out_dir))
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
-    avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch)
+    avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
-    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev')
+    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
     if dev_acc > best_dev_acc:
         if best_dev_acc > 0:
             os.system('rm '+ out_dir + '/best_model' + '.pth')
@@ -226,6 +252,6 @@ for epoch in range(EPOCHS):
         best_model = model
         torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
         # evaluate on test with the best dev performance model
-        test_acc = evaluate(best_model, test_iter, loss_function, 'Test')
-test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test')
+        test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
+test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
