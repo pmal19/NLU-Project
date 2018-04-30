@@ -1,0 +1,24 @@
+SST eval mode: Preserving only top node label.
+('Time taken - ', 333.1375470161438)
+('Epoch start - ', 0)
+./sstBase.py:77: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
+  output = F.log_softmax(self.classifierSst(features))
+Train Epoch: 0 [0/318582 (0%)]	Loss: 1.792948	Dev Loss: 61.673824	Dev Acc: 21.139706
+Train Epoch: 0 [6400/318582 (2%)]	Loss: 0.842306	Dev Loss: 43.325058	Dev Acc: 21.047794
+Train Epoch: 0 [12800/318582 (4%)]	Loss: 0.936965	Dev Loss: 39.603733	Dev Acc: 20.863971
+Train Epoch: 0 [19200/318582 (6%)]	Loss: 0.769869	Dev Loss: 40.914619	Dev Acc: 20.955882
+Train Epoch: 0 [25600/318582 (8%)]	Loss: 0.682428	Dev Loss: 39.642803	Dev Acc: 20.955882
+Train Epoch: 0 [32000/318582 (10%)]	Loss: 1.066617	Dev Loss: 40.521389	Dev Acc: 20.955882
+Train Epoch: 0 [38400/318582 (12%)]	Loss: 0.973830	Dev Loss: 36.541496	Dev Acc: 20.955882
+Train Epoch: 0 [44800/318582 (14%)]	Loss: 0.724130	Dev Loss: 38.357483	Dev Acc: 20.955882
+Train Epoch: 0 [51200/318582 (16%)]	Loss: 1.054401	Dev Loss: 37.887878	Dev Acc: 20.955882
+Train Epoch: 0 [57600/318582 (18%)]	Loss: 0.864664	Dev Loss: 42.025021	Dev Acc: 20.955882
+Train Epoch: 0 [64000/318582 (20%)]	Loss: 0.839038	Dev Loss: 43.224079	Dev Acc: 20.955882
+Train Epoch: 0 [70400/318582 (22%)]	Loss: 0.979873	Dev Loss: 37.206261	Dev Acc: 20.955882
+Train Epoch: 0 [76800/318582 (24%)]	Loss: 0.785322	Dev Loss: 39.797928	Dev Acc: 20.955882
+Train Epoch: 0 [83200/318582 (26%)]	Loss: 0.556279	Dev Loss: 43.103817	Dev Acc: 20.955882
+Train Epoch: 0 [89600/318582 (28%)]	Loss: 1.036596	Dev Loss: 40.509369	Dev Acc: 20.955882
+Train Epoch: 0 [96000/318582 (30%)]	Loss: 0.611857	Dev Loss: 39.181599	Dev Acc: 20.955882
+Train Epoch: 0 [102400/318582 (32%)]	Loss: 0.874228	Dev Loss: 39.361752	Dev Acc: 20.955882
+slurmstepd: error: Exceeded job memory limit
+slurmstepd: error: *** JOB 5899560 ON gpu-32 CANCELLED AT 2018-04-29T16:27:13 ***
