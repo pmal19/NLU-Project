@@ -159,9 +159,23 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 
 def main():
+<<<<<<< HEAD
 
     local=False
     if(local):
+=======
+    local_goud = True
+    local=True
+    if(local_goud):
+        quoraPathTrain = '../../data/questionsTrain.csv'
+        quoraPathDev = '../../data/questionsDev.csv'
+        nliPathTrain = "/scratch/sgm400/NLU_PROJECT/snli_1.0/snli_1.0_train.jsonl"
+        nliPathDev = "/scratch/sgm400/NLU_PROJECT/snli_1.0/snli_1.0_dev.jsonl"
+        sstPathTrain = "/scratch/sgm400/NLU_PROJECT/trees/train.txt"
+        sstPathDev = "/scratch/sgm400/NLU_PROJECT/trees/dev.txt"
+        glovePath = '/scratch/sgm400/NLU_PROJECT/glove.840B.300d.txt'
+    elif(local):
+>>>>>>> 188dfe2a7432a57de6cfe8a6878285bcb55f4b6b
         quoraPathTrain = '../../data/questionsTrain.csv'
         quoraPathDev = '../../data/questionsDev.csv'
         nliPathTrain = "../../Data/snli_1.0/snliSmallaa"
@@ -189,7 +203,7 @@ def main():
     model_dim = 300
     num_layers = 2
     reverse = False
-    bidirectional = False
+    bidirectional = True
     dropout = 0.1
 
     mlp_input_dim = 300

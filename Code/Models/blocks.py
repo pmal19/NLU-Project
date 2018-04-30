@@ -462,7 +462,7 @@ class LSTM(nn.Module):
         self.bi = 2 if self.bidirectional else 1
         self.num_layers = num_layers
         self.training = training
-        self.rnn = nn.LSTM(inp_dim, model_dim , num_layers=num_layers,
+        self.rnn = nn.LSTM(inp_dim, model_dim // self.bi , num_layers=num_layers,
                            # batch_first=True,
                            bidirectional=self.bidirectional,
                            dropout=dropout)
@@ -483,7 +483,7 @@ class LSTM(nn.Module):
                     torch.zeros(
                         num_layers * bi,
                         batch_size,
-                        model_dim),
+                        model_dim// self.bi),
                     # volatile=not self.training))
                     requires_grad=self.training))
         if c0 is None:
@@ -492,7 +492,7 @@ class LSTM(nn.Module):
                     torch.zeros(
                         num_layers * bi,
                         batch_size,
-                        model_dim),
+                        model_dim// self.bi),
                     # volatile=not self.training))
                     requires_grad=self.training))
 
