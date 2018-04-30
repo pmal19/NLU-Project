@@ -12,3 +12,14 @@ LABEL_MAP = {
 with open("test.tsv", "w") as f:
 	for x in data:
 		print ("%s\t%s\t%s" % (x['sentence_1'], x["sentence_2"], LABEL_MAP[x["label"]]), file=f)
+
+
+import csv
+filename=open("/Users/anhadmohananey/Downloads/questions.csv", "r")
+reader=csv.DictReader(filename, delimiter=",")
+arr=[]
+def parse(x):
+	return x.lower().replace(".", " .").replace("?", " ?").replace("!", " !")
+with open("all.csv", "w") as f:
+	for x in reader:
+		print("%s\t%s\t%s" % (parse(x["question1"]), parse(x["question2"]), x["is_duplicate"]), file=f)
