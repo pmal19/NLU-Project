@@ -87,7 +87,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.hidden = model.init_hidden()
         pred = model(sent1, sent2)
         # pdb.set_trace()
-        pred_label = pred.data.max(1)[1].cpu().numpy()
+        pred_label = pred.data.max(1)[1].numpy()
         pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
@@ -155,7 +155,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
         pred = model(sent1, sent2)
-        pred_label = pred.data.max(1)[1].cpu().numpy()
+        pred_label = pred.data.max(1)[1].numpy()
         pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
@@ -168,7 +168,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
 
 
 def load_nli(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/NLI/', train='train.tsv',
+    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
@@ -193,7 +193,8 @@ args.add_argument('--m', dest='model', default='lstm', help='specify the mode to
 args = args.parse_args()
 
 EPOCHS = 20
-USE_GPU = torch.cuda.is_available()
+#USE_GPU = torch.cuda.is_available()
+USE_GPU = False
 EMBEDDING_DIM = 300
 HIDDEN_DIM = 150
 
