@@ -32,5 +32,5 @@ class BiLSTMSentiment(nn.Module):
         lstm_out, self.hidden = self.lstm(x, self.hidden)
         y = self.hidden2label(lstm_out[-1])
         log_probs = F.log_softmax(y)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         return log_probs

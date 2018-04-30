@@ -60,6 +60,7 @@ class BiLSTMInference(nn.Module):
                     Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
 
     def forward(self, sentence1, sentence2):
+        # pdb.set_trace()
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
         x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
         x = torch.cat((x1, x2), 2)
