@@ -10,6 +10,7 @@ from torchtext import data
 import numpy as np
 import argparse
 from biLSTMs import *
+import pdb
 
 torch.set_num_threads(8)
 torch.manual_seed(1)
@@ -57,12 +58,12 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     pred_res = []
     count = 0
     for batch in tqdm(train_iter, desc='Train epoch '+str(epoch+1)):
-        sent, label = batch.text, batch.label
+        sent1, sent2, label = batch.text1, batch.text2, batch.label
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
-        pred = model(sent)
+        pred = model(sent1, sent2)
         pred_label = pred.data.max(1)[1].numpy()
         pred_res += [x for x in pred_label]
         model.zero_grad()
@@ -76,30 +77,30 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     return avg_loss, acc
 
 
-def train_epoch(model, train_iter, loss_function, optimizer):
-    model.train()
-    avg_loss = 0.0
-    truth_res = []
-    pred_res = []
-    count = 0
-    for batch in train_iter:
-        sent, label = batch.text, batch.label
-        label.data.sub_(1)
-        truth_res += list(label.data)
-        model.batch_size = len(label.data)
-        model.hidden = model.init_hidden()
-        pred = model(sent)
-        pred_label = pred.data.max(1)[1].numpy()
-        pred_res += [x for x in pred_label]
-        model.zero_grad()
-        loss = loss_function(pred, label)
-        avg_loss += loss.data[0]
-        count += 1
-        loss.backward()
-        optimizer.step()
-    avg_loss /= len(train_iter)
-    acc = get_accuracy(truth_res, pred_res)
-    return avg_loss, acc
+# def train_epoch(model, train_iter, loss_function, optimizer):
+#     model.train()
+#     avg_loss = 0.0
+#     truth_res = []
+#     pred_res = []
+#     count = 0
+#     for batch in train_iter:
+#         sent1, sent2, label = batch.text1, batch.text2, batch.label
+#         label.data.sub_(1)
+#         truth_res += list(label.data)
+#         model.batch_size = len(label.data)
+#         model.hidden = model.init_hidden()
+#         pred = model(sent1, sent2)
+#         pred_label = pred.data.max(1)[1].numpy()
+#         pred_res += [x for x in pred_label]
+#         model.zero_grad()
+#         loss = loss_function(pred, label)
+#         avg_loss += loss.data[0]
+#         count += 1
+#         loss.backward()
+#         optimizer.step()
+#     avg_loss /= len(train_iter)
+#     acc = get_accuracy(truth_res, pred_res)
+#     return avg_loss, acc
 
 
 def evaluate(model, data, loss_function, name):
@@ -108,12 +109,12 @@ def evaluate(model, data, loss_function, name):
     truth_res = []
     pred_res = []
     for batch in data:
-        sent, label = batch.text, batch.label
+        sent1, sent2, label = batch.text1, batch.text2, batch.label
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
-        pred = model(sent)
+        pred = model(sent1, sent2)
         pred_label = pred.data.max(1)[1].numpy()
         pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
@@ -124,14 +125,14 @@ def evaluate(model, data, loss_function, name):
     return acc
 
 
-def load_sst(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/SST2/', train='train.tsv',
+def load_nli(text_field, label_field, batch_size):
+    train, dev, test = data.TabularDataset.splits(path='./data/NLI/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
-                                                  fields=[('text', text_field), ('label', label_field)])
+                                                  fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=-1)
+                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: data.interleave_keys(len(x.text1),len(x.text2)), repeat=False, device=-1)
     ## for GPU run
 #     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
 #                 batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=None)
@@ -161,8 +162,7 @@ best_dev_acc = 0.0
 
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter, test_iter = load_sst(text_field, label_field, BATCH_SIZE)
-
+train_iter, dev_iter, test_iter = load_nli(text_field, label_field, BATCH_SIZE)
 
 model = BiLSTMInference(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE)
