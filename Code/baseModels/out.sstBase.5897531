@@ -1,0 +1,87 @@
+SST eval mode: Preserving only top node label.
+('Time taken - ', 334.61994099617004)
+('Epoch start - ', 0)
+./sstBase.py:77: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
+  output = F.log_softmax(self.classifierSst(features))
+Train Epoch: 0 [0/318582 (0%)]	Loss: 1.775367	Dev Loss: 132.154968	Dev Acc: 20.955882
+Train Epoch: 0 [6400/318582 (2%)]	Loss: 0.823703	Dev Loss: 42.940090	Dev Acc: 21.047794
+Train Epoch: 0 [12800/318582 (4%)]	Loss: 0.961239	Dev Loss: 39.022125	Dev Acc: 21.047794
+Train Epoch: 0 [19200/318582 (6%)]	Loss: 0.756611	Dev Loss: 40.820923	Dev Acc: 20.955882
+Train Epoch: 0 [25600/318582 (8%)]	Loss: 0.696135	Dev Loss: 39.095425	Dev Acc: 20.955882
+Train Epoch: 0 [32000/318582 (10%)]	Loss: 1.055333	Dev Loss: 39.220562	Dev Acc: 20.955882
+Train Epoch: 0 [38400/318582 (12%)]	Loss: 0.969225	Dev Loss: 36.469727	Dev Acc: 20.955882
+Train Epoch: 0 [44800/318582 (14%)]	Loss: 0.719658	Dev Loss: 38.392635	Dev Acc: 20.955882
+Train Epoch: 0 [51200/318582 (16%)]	Loss: 1.029555	Dev Loss: 37.585999	Dev Acc: 20.955882
+Train Epoch: 0 [57600/318582 (18%)]	Loss: 0.857304	Dev Loss: 41.194756	Dev Acc: 20.955882
+Train Epoch: 0 [64000/318582 (20%)]	Loss: 0.835244	Dev Loss: 42.684467	Dev Acc: 20.955882
+Train Epoch: 0 [70400/318582 (22%)]	Loss: 0.985761	Dev Loss: 37.234062	Dev Acc: 20.955882
+Train Epoch: 0 [76800/318582 (24%)]	Loss: 0.779318	Dev Loss: 40.144650	Dev Acc: 20.955882
+Train Epoch: 0 [83200/318582 (26%)]	Loss: 0.561550	Dev Loss: 42.967369	Dev Acc: 20.955882
+Train Epoch: 0 [89600/318582 (28%)]	Loss: 1.034996	Dev Loss: 41.005226	Dev Acc: 20.955882
+Train Epoch: 0 [96000/318582 (30%)]	Loss: 0.609844	Dev Loss: 39.434799	Dev Acc: 20.955882
+Train Epoch: 0 [102400/318582 (32%)]	Loss: 0.875794	Dev Loss: 39.212112	Dev Acc: 20.955882
+Train Epoch: 0 [108800/318582 (34%)]	Loss: 0.860700	Dev Loss: 39.916481	Dev Acc: 20.955882
+Train Epoch: 0 [115200/318582 (36%)]	Loss: 0.898605	Dev Loss: 41.085865	Dev Acc: 20.955882
+Train Epoch: 0 [121600/318582 (38%)]	Loss: 1.222481	Dev Loss: 40.778069	Dev Acc: 20.955882
+Train Epoch: 0 [128000/318582 (40%)]	Loss: 0.898398	Dev Loss: 39.232853	Dev Acc: 20.955882
+Train Epoch: 0 [134400/318582 (42%)]	Loss: 0.935181	Dev Loss: 37.739906	Dev Acc: 20.955882
+Train Epoch: 0 [140800/318582 (44%)]	Loss: 0.865950	Dev Loss: 41.854752	Dev Acc: 20.955882
+Train Epoch: 0 [147200/318582 (46%)]	Loss: 0.663219	Dev Loss: 38.898087	Dev Acc: 20.955882
+Train Epoch: 0 [153600/318582 (48%)]	Loss: 1.156984	Dev Loss: 40.435974	Dev Acc: 20.955882
+Train Epoch: 0 [160000/318582 (50%)]	Loss: 0.798064	Dev Loss: 38.105850	Dev Acc: 20.955882
+Train Epoch: 0 [166400/318582 (52%)]	Loss: 1.375711	Dev Loss: 38.236221	Dev Acc: 20.955882
+Train Epoch: 0 [172800/318582 (54%)]	Loss: 0.764436	Dev Loss: 36.875919	Dev Acc: 20.955882
+Train Epoch: 0 [179200/318582 (56%)]	Loss: 0.713305	Dev Loss: 37.988804	Dev Acc: 20.955882
+Train Epoch: 0 [185600/318582 (58%)]	Loss: 0.980405	Dev Loss: 37.907513	Dev Acc: 20.955882
+Train Epoch: 0 [192000/318582 (60%)]	Loss: 1.012424	Dev Loss: 38.517891	Dev Acc: 20.955882
+Train Epoch: 0 [198400/318582 (62%)]	Loss: 0.786782	Dev Loss: 38.909981	Dev Acc: 20.955882
+Train Epoch: 0 [204800/318582 (64%)]	Loss: 0.929928	Dev Loss: 38.627251	Dev Acc: 20.955882
+Train Epoch: 0 [211200/318582 (66%)]	Loss: 1.124586	Dev Loss: 37.895374	Dev Acc: 20.955882
+Train Epoch: 0 [217600/318582 (68%)]	Loss: 0.861312	Dev Loss: 40.184280	Dev Acc: 20.955882
+Train Epoch: 0 [224000/318582 (70%)]	Loss: 0.836276	Dev Loss: 39.509472	Dev Acc: 20.955882
+Train Epoch: 0 [230400/318582 (72%)]	Loss: 1.156942	Dev Loss: 38.794441	Dev Acc: 20.955882
+Train Epoch: 0 [236800/318582 (74%)]	Loss: 0.720369	Dev Loss: 36.867218	Dev Acc: 20.955882
+Train Epoch: 0 [243200/318582 (76%)]	Loss: 1.006974	Dev Loss: 37.514729	Dev Acc: 20.955882
+Train Epoch: 0 [249600/318582 (78%)]	Loss: 1.157929	Dev Loss: 38.440769	Dev Acc: 20.955882
+Train Epoch: 0 [256000/318582 (80%)]	Loss: 1.108459	Dev Loss: 40.254749	Dev Acc: 20.955882
+Train Epoch: 0 [262400/318582 (82%)]	Loss: 0.978333	Dev Loss: 38.662773	Dev Acc: 20.955882
+Train Epoch: 0 [268800/318582 (84%)]	Loss: 0.975452	Dev Loss: 37.333710	Dev Acc: 21.783088
+Train Epoch: 0 [275200/318582 (86%)]	Loss: 0.801667	Dev Loss: 37.001530	Dev Acc: 20.863971
+Train Epoch: 0 [281600/318582 (88%)]	Loss: 1.094162	Dev Loss: 37.954952	Dev Acc: 20.955882
+Train Epoch: 0 [288000/318582 (90%)]	Loss: 0.931152	Dev Loss: 41.984249	Dev Acc: 1.194853
+Train Epoch: 0 [294400/318582 (92%)]	Loss: 0.728906	Dev Loss: 39.896694	Dev Acc: 21.415441
+Train Epoch: 0 [300800/318582 (94%)]	Loss: 0.715543	Dev Loss: 40.587765	Dev Acc: 22.242647
+Train Epoch: 0 [307200/318582 (96%)]	Loss: 0.834151	Dev Loss: 39.726116	Dev Acc: 21.599265
+Train Epoch: 0 [313600/318582 (98%)]	Loss: 0.631492	Dev Loss: 46.876617	Dev Acc: 4.227941
+Traceback (most recent call last):
+  File "./sstBase.py", line 233, in <module>
+    main()
+  File "./sstBase.py", line 228, in main
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)
+  File "./sstBase.py", line 152, in train
+    dev_output = model(sd)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "./sstBase.py", line 74, in forward
+    oE = self.encoderSst(s1)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "./sstBase.py", line 44, in forward
+    output, hn = self.lstm(s1, (self.h0, self.c0))
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/rnn.py", line 169, in forward
+    output, hidden = func(input, self.all_weights, hx)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 385, in forward
+    return func(input, *fargs, **fkwargs)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 245, in forward
+    nexth, output = func(input, hidden, weight)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 85, in forward
+    hy, output = inner(input, hidden[l], weight[l])
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 114, in forward
+    hidden = inner(input[i], hidden, *weight)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 32, in LSTMCell
+    gates = F.linear(input, w_ih, b_ih) + F.linear(hx, w_hh, b_hh)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/functional.py", line 835, in linear
+    return torch.addmm(bias, input, weight.t())
+RuntimeError: Expected object of type Variable[torch.FloatTensor] but found type Variable[torch.DoubleTensor] for argument #1 'mat1'

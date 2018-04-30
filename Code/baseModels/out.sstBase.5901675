@@ -1,0 +1,39 @@
+SST eval mode: Preserving only top node label.
+('Time taken - ', 331.7771370410919)
+('Epoch start - ', 0)
+Traceback (most recent call last):
+  File "./sstBase.py", line 233, in <module>
+    main()
+  File "./sstBase.py", line 228, in main
+    train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSize, use_cuda, devLoader, devbatchSize)
+  File "./sstBase.py", line 139, in train
+    loss = trainEpoch(epoch,20000000,trainLoader,model,optimizer,criterion,inp_dim,batchSize, use_cuda, devLoader, devbatchSize)
+  File "./sstBase.py", line 99, in trainEpoch
+    output = model(s1)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "./sstBase.py", line 74, in forward
+    oE = self.encoderSst(s1)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "./sstBase.py", line 44, in forward
+    output, hn = self.lstm(s1, (self.h0, self.c0))
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
+    result = self.forward(*input, **kwargs)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/rnn.py", line 169, in forward
+    output, hidden = func(input, self.all_weights, hx)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 385, in forward
+    return func(input, *fargs, **fkwargs)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/autograd/function.py", line 328, in _do_forward
+    flat_output = super(NestedIOFunction, self)._do_forward(*flat_input)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/autograd/function.py", line 350, in forward
+    result = self.forward_extended(*nested_tensors)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 294, in forward_extended
+    cudnn.rnn.forward(self, input, hx, weight, output, hy)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/backends/cudnn/rnn.py", line 242, in forward
+    fn.hx_desc = cudnn.descriptor(hx)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/backends/cudnn/__init__.py", line 338, in descriptor
+    descriptor.set(tensor)
+  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/backends/cudnn/__init__.py", line 139, in set
+    self, _typemap[tensor.type()], tensor.dim(),
+KeyError: 'torch.FloatTensor'

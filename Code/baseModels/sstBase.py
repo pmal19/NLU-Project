@@ -141,7 +141,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
         n_correct = 0
         n_total = 0
         for idx, (dev_data, dev_target) in enumerate(devLoader):
-            sd = dev_data
+            sd = dev_data.float()
             # pdb.set_trace()
             devbatchSize, _ = sd.shape
             sd = sd.transpose(0,1).contiguous().view(-1,inp_dim,devbatchSize).transpose(1,2)
@@ -187,7 +187,7 @@ def main():
 
     inp_dim = 300
     model_dim = 300
-    num_layers = 1
+    num_layers = 2
     reverse = False
     bidirectional = False
     dropout = 0.1
@@ -195,14 +195,14 @@ def main():
     mlp_input_dim = 300
     mlp_dim = 300
     num_classes = 5
-    num_mlp_layers = 2
+    num_mlp_layers = 5
     mlp_ln = True
     classifier_dropout_rate = 0.1
 
     training = True
 
     use_cuda = torch.cuda.is_available()
-    use_cuda = False
+    # use_cuda = False
     if(use_cuda):
         the_gpu.gpu = 0
 
