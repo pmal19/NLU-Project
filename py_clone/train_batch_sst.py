@@ -6,8 +6,8 @@ from torch import optim
 import time, random
 import os
 from tqdm import tqdm
-from lstm import LSTMSentiment
-from bilstm import BiLSTMSentiment
+# from lstm import LSTMSentiment
+# from bilstm import BiLSTMSentiment
 from torchtext import data
 import numpy as np
 import argparse
