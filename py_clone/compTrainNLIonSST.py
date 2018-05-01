@@ -239,14 +239,14 @@ for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
-    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    if dev_acc > best_dev_acc:
-        if best_dev_acc > 0:
-            os.system('rm '+ out_dir + '/best_model' + '.pth')
-        best_dev_acc = dev_acc
-        best_model = model
-        torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
-        # evaluate on test with the best dev performance model
-        test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
+    # dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
+    # if dev_acc > best_dev_acc:
+    #     if best_dev_acc > 0:
+    #         os.system('rm '+ out_dir + '/best_model' + '.pth')
+    #     best_dev_acc = dev_acc
+    #     best_model = model
+    #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
+    #     # evaluate on test with the best dev performance model
+    #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
 test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
