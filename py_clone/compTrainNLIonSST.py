@@ -68,6 +68,8 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     count = 0
     for batch in tqdm(train_iter, desc='Train epoch '+str(epoch+1)):
         sent, label = batch.text, batch.label
+        if sent.shape[1] != 32:
+            continue
         if USE_GPU:
             sent, label = sent.cuda(), label.cuda()
         label.data.sub_(1)
@@ -99,6 +101,8 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     tot_samples = 0.0
     for batch in data:
         sent, label = batch.text, batch.label
+        if sent.shape[1] != 32:
+            continue
         if USE_GPU:
             sent, label = sent.cuda(), label.cuda()
         label.data.sub_(1)
