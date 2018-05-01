@@ -144,7 +144,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     return acc
 
 
-def load_nli(text_field, label_field, batch_size):
+def load_quora(text_field, label_field, batch_size):
     train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
@@ -181,7 +181,7 @@ best_dev_acc = 0.0
 
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter, test_iter = load_nli(text_field, label_field, BATCH_SIZE)
+train_iter, dev_iter, test_iter = load_quora(text_field, label_field, BATCH_SIZE)
 
 model = BiLSTMDuplicate(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE)

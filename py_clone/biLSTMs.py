@@ -417,6 +417,10 @@ class GumbelQuora(nn.Module):
         # print(self.lstmInference.lstmInference)
 
 
+        # for param in model.parameters():
+        #     param.requires_grad = False
+
+
         # self.sst_lstm = load_model("sst", sst_path, embedding_dim, hidden_dim)
         # self.nli_lstm = load_model("nli", nli_path, embedding_dim, hidden_dim)
         #pdb.set_trace()
