@@ -60,13 +60,9 @@ class quoraNet(nn.Module):
         super(quoraNet, self).__init__()
         if which_to_use=="sst":
             loaded = torch.load(sst_path)['model_state_dict']
-<<<<<<< HEAD
-            self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, True)
-            newModel=self.encoderQuora.state_dict()
-=======
+            
             self.encoderQuora = LSTM(inp_dim, model_dim, num_layers, reverse, bidirectional, dropout, False)
             newModel = self.encoderQuora.state_dict()
->>>>>>> aac199b404e0b23ddfb176ff5daa36e52b70cf4a
             pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
             newModel.update(pretrained_dict)
             self.encoderQuora.load_state_dict(newModel)

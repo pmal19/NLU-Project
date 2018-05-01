@@ -1,13 +1,0 @@
-Train epoch 1:   0%|          | 0/17168 [00:00<?, ?it/s]Load word embeddings...
-Training...
-Writing to /home/pm2758/NLUProject/py_clone/runsNLI/1525111538
-
-/home/pm2758/NLUProject/py_clone/biLSTMs.py:70: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
-  log_probs = F.log_softmax(y)
-Exception KeyError: KeyError(<weakref at 0x2b7f0daaa368; to 'tqdm' at 0x2b7f0d9d9b10>,) in <bound method tqdm.__del__ of Train epoch 1:   0%|          | 0/17168 [00:00<?, ?it/s]> ignored
-Traceback (most recent call last):
-  File "./train_batch_nli.py", line 219, in <module>
-    avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch)
-  File "./train_batch_nli.py", line 77, in train_epoch_progress
-    pred_label = pred.data.max(1)[1].numpy()
-RuntimeError: can't convert CUDA tensor to numpy (it doesn't support GPU arrays). Use .cpu() to move the tensor to host memory first.

@@ -6,8 +6,8 @@ from torch import optim
 import time, random
 import os
 from tqdm import tqdm
-from lstm import LSTMSentiment
-from bilstm import BiLSTMSentiment
+# from lstm import LSTMSentiment
+# from bilstm import BiLSTMSentiment
 from torchtext import data
 import numpy as np
 import argparse
@@ -51,8 +51,8 @@ def get_accuracy(truth, pred):
     return right / len(truth)
 
 def get_accuracy2(tot_correct, tot_samples, label, pred):
-    tot_correct += (torch.max(pred, 1)[1].view(label.size()) == label).sum()
-    tot_samples += float(label.shape[0])
+    tot_correct += double((torch.max(pred, 1)[1].view(label.size()) == label).sum())
+    tot_samples += double((label.shape[0]))
     return tot_correct, tot_samples
 
 def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU):
@@ -83,7 +83,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    acc = tot_correct*100./tot_samples
+    acc = tot_correct/tot_samples
     return avg_loss, acc
 
 
@@ -136,7 +136,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
-    acc = tot_correct*100./tot_samples
+    acc = tot_correct/tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
