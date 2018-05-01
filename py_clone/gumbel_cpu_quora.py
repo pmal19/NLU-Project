@@ -206,7 +206,7 @@ best_dev_acc = 0.0
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 train_iter, dev_iter, test_iter = load_quora(text_field, label_field, BATCH_SIZE)
-pdb.set_trace()
+# pdb.set_trace()
 model = GumbelQuora(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path="runsSST/1525070354/sst_best_model.pth", nli_path="runsNLI/1525136964/nli_best_model.pth")
 
@@ -234,7 +234,8 @@ model.embeddings.weight.data.copy_(torch.from_numpy(pretrained_embeddings))
 
 
 best_model = model
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+# optimizer = optim.Adam(model.parameters(), lr=1e-3)
+optimizer = optim.Adam(filter(lambda param: param.requires_grad,model.parameters()), lr=1e-3)
 loss_function = nn.NLLLoss()
 
 print('Training...')
