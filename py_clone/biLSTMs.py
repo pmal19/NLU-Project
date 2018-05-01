@@ -101,8 +101,8 @@ class BiLSTMDuplicate(nn.Module):
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
         x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
         # x = torch.cat((x1, x2), 2)
-        lstm_out1, self.hidden = self.lstmInference(x1, self.hidden)
-        lstm_out2, self.hidden = self.lstmInference(x2, self.hidden)
+        lstm_out1, _ = self.lstmDuplicate(x1, self.hidden)
+        lstm_out2, _ = self.lstmDuplicate(x2, self.hidden)
         # pdb.set_trace()
         lstm_out = torch.cat((lstm_out1, lstm_out2), 2)
         y = self.hidden2label(lstm_out[-1])
@@ -359,7 +359,7 @@ class sentiment(nn.Module):
                     Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
     def forward(self, sentence):
         # x = self.embeddings(sentence).view(len(sentence), self.batch_size, -1)
-        lstm_out, self.hidden = self.lstmSentiment(sentence, self.hidden)
+        lstm_out, _ = self.lstmSentiment(sentence, self.hidden)
         return lstm_out[-1]
 
 
@@ -385,7 +385,33 @@ class inference(nn.Module):
                     Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
     def forward(self, sentence):
         # x = self.embeddings(sentence).view(len(sentence), self.batch_size, -1)
-        lstm_out, self.hidden = self.lstmInference(sentence, self.hidden)
+        lstm_out, _ = self.lstmInference(sentence, self.hidden)
+        return lstm_out[-1]
+
+
+class duplicate(nn.Module):
+    """docstring for duplicate"""
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, dropout=0.5):
+        super(duplicate, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.use_gpu = use_gpu
+        self.batch_size = batch_size
+        self.dropout = dropout
+        self.lstmDuplicate = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
+        self.hidden = self.init_hidden()
+
+    def init_hidden(self):
+        # first is the hidden h
+        # second is the cell c
+        if self.use_gpu:
+            return (Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()),
+                    Variable(torch.zeros(2, self.batch_size, self.hidden_dim).cuda()))
+        else:
+            return (Variable(torch.zeros(2, self.batch_size, self.hidden_dim)),
+                    Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
+    def forward(self, sentence):
+        # x = self.embeddings(sentence).view(len(sentence), self.batch_size, -1)
+        lstm_out, _ = self.lstmDuplicate(sentence, self.hidden)
         return lstm_out[-1]
 
 
@@ -404,6 +430,9 @@ class GumbelQuora(nn.Module):
         self.lstmSentiment.load_state_dict(newModel)
         # print(self.lstmSentiment)
         # print(self.lstmSentiment.lstmSentiment)
+        for param in self.lstmSentiment.parameters():
+            param.requires_grad = False
+
         
         loaded = torch.load(nli_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
@@ -415,6 +444,8 @@ class GumbelQuora(nn.Module):
         self.lstmInference.load_state_dict(newModel)
         # print(self.lstmInference)
         # print(self.lstmInference.lstmInference)
+        for param in self.lstmInference.parameters():
+            param.requires_grad = False
 
 
         # self.sst_lstm = load_model("sst", sst_path, embedding_dim, hidden_dim)
