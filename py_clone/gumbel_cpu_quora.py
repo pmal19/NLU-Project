@@ -167,7 +167,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     return acc
 
 
-def load_nli(text_field, label_field, batch_size):
+def load_quora(text_field, label_field, batch_size):
     train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
@@ -205,10 +205,10 @@ best_dev_acc = 0.0
 
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter, test_iter = load_nli(text_field, label_field, BATCH_SIZE)
+train_iter, dev_iter, test_iter = load_quora(text_field, label_field, BATCH_SIZE)
 
 model = GumbelQuora(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
-                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path="/Users/anhadmohananey/Downloads/sst_best_model.pth", nli_path="/Users/anhadmohananey/Downloads/nli_best_model.pth")
+                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path="runsSST/1525070354/sst_best_model.pth", nli_path="runsNLI/1525136964/nli_best_model.pth")
 
 if USE_GPU:
     model = model.cuda()
@@ -222,7 +222,7 @@ print('Load word embeddings...')
 word_to_idx = text_field.vocab.stoi
 pretrained_embeddings = np.random.uniform(-0.25, 0.25, (len(text_field.vocab), 300))
 pretrained_embeddings[0] = 0
-word2vec = load_bin_vec('/Users/anhadmohananey/Downloads/GoogleNews-vectors-negative300.bin', word_to_idx)
+word2vec = load_bin_vec('./data/GoogleNews-vectors-negative300.bin', word_to_idx)
 for word, vector in word2vec.items():
     pretrained_embeddings[word_to_idx[word]-1] = vector
 
@@ -238,7 +238,7 @@ optimizer = optim.Adam(model.parameters(), lr=1e-3)
 loss_function = nn.NLLLoss()
 
 print('Training...')
-out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsNLI", timestamp))
+out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsGumbelQuora", timestamp))
 print("Writing to {}\n".format(out_dir))
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
