@@ -1,0 +1,5 @@
+No handlers could be found for logger "torchtext.data.iterator"
+Traceback (most recent call last):
+  File "./train_batch_sst.py", line 182, in <module>
+    model = BiLSTMSentiment(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+NameError: name 'BiLSTMSentiment' is not defined
