@@ -162,13 +162,14 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         #tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(data)
     acc = get_accuracy(truth_res, pred_res)
+    pdb.set_trace()
     acc = tot_correct*100./tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
 
 def load_nli(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/NLI/', train='train.tsv',
+    train, dev, test = data.TabularDataset.splits(path='./data/NLI/', train='dev.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
@@ -244,6 +245,7 @@ if not os.path.exists(out_dir):
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
+    torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
     if dev_acc > best_dev_acc:
         if best_dev_acc > 0:
