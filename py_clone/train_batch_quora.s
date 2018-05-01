@@ -4,7 +4,7 @@
 #SBATCH --job-name=Quoratrain
 #SBATCH --time=100:00:00
 #SBATCH --nodes=1
-#SBATCH --mem=50GB
+#SBATCH --mem=100GB
 ##SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --output=out.Quoratrain.%j
