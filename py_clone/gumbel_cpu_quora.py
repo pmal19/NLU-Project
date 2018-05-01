@@ -168,9 +168,9 @@ def evaluate(model, data, loss_function, name, USE_GPU):
 
 
 def load_quora(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
+    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='training.full.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
-                                                  fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
+                                                  fields=[('label', label_field),('text1', text_field), ('text2', text_field)])
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
     # train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
@@ -206,7 +206,7 @@ best_dev_acc = 0.0
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 train_iter, dev_iter, test_iter = load_quora(text_field, label_field, BATCH_SIZE)
-
+pdb.set_trace()
 model = GumbelQuora(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path="runsSST/1525070354/sst_best_model.pth", nli_path="runsNLI/1525136964/nli_best_model.pth")
 
