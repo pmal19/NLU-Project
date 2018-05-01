@@ -53,8 +53,8 @@ def get_accuracy(truth, pred):
     return right / len(truth)
 
 def get_accuracy2(tot_correct, tot_samples, label, pred):
-    tot_correct += (torch.max(pred, 1)[1].view(label.size()) == label).sum()
-    tot_samples += (label.shape[0])
+    tot_correct += long((torch.max(pred, 1)[1].view(label.size()) == label).sum())
+    tot_samples += long((label.shape[0]))
     return tot_correct, tot_samples
 
 
@@ -87,45 +87,19 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         #model.hidden = model.init_hidden()
         pred, _ = model(sent1, sent2)
         #pdb.set_trace()
-        pred_label = pred.data.max(1)[1].numpy()
-        pred_res += [x for x in pred_label]
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
         count += 1
         loss.backward()
         optimizer.step()
-        #tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
+        tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(train_iter)
-    acc = get_accuracy(truth_res, pred_res)
-    #acc = tot_correct/tot_samples
+    # acc = get_accuracy(truth_res, pred_res)
+    acc = tot_correct/tot_samples
     return avg_loss, acc
-
-
-# def train_epoch(model, train_iter, loss_function, optimizer):
-#     model.train()
-#     avg_loss = 0.0
-#     truth_res = []
-#     pred_res = []
-#     count = 0
-#     for batch in train_iter:
-#         sent1, sent2, label = batch.text1, batch.text2, batch.label
-#         label.data.sub_(1)
-#         truth_res += list(label.data)
-#         model.batch_size = len(label.data)
-#         model.hidden = model.init_hidden()
-#         pred = model(sent1, sent2)
-#         pred_label = pred.data.max(1)[1].numpy()
-#         pred_res += [x for x in pred_label]
-#         model.zero_grad()
-#         loss = loss_function(pred, label)
-#         avg_loss += loss.data[0]
-#         count += 1
-#         loss.backward()
-#         optimizer.step()
-#     avg_loss /= len(train_iter)
-#     acc = get_accuracy(truth_res, pred_res)
-#     return avg_loss, acc
 
 
 def evaluate(model, data, loss_function, name, USE_GPU):
@@ -153,15 +127,15 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        model.hidden = model.init_hidden()
+        # model.hidden = model.init_hidden()
         pred = model(sent1, sent2)
-        pred_label = pred.data.max(1)[1].numpy()
-        pred_res += [x for x in pred_label]
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        #tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
+        tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(data)
-    acc = get_accuracy(truth_res, pred_res)
+    # acc = get_accuracy(truth_res, pred_res)
     acc = tot_correct*100./tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
@@ -193,8 +167,7 @@ args.add_argument('--m', dest='model', default='lstm', help='specify the mode to
 args = args.parse_args()
 
 EPOCHS = 20
-#USE_GPU = torch.cuda.is_available()
-USE_GPU = False
+USE_GPU = torch.cuda.is_available()
 EMBEDDING_DIM = 300
 HIDDEN_DIM = 150
 
@@ -246,6 +219,7 @@ if not os.path.exists(out_dir):
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
+    torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
     if dev_acc > best_dev_acc:
         if best_dev_acc > 0:
