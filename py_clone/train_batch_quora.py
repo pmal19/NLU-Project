@@ -53,8 +53,8 @@ def get_accuracy(truth, pred):
     return right / len(truth)
 
 def get_accuracy2(tot_correct, tot_samples, label, pred):
-    tot_correct += (torch.max(pred, 1)[1].view(label.size()) == label).sum()
-    tot_samples += float(label.shape[0])
+    tot_correct += long((torch.max(pred, 1)[1].view(label.size()) == label).sum())
+    tot_samples += long((label.shape[0]))
     return tot_correct, tot_samples
 
 
@@ -87,8 +87,8 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.hidden = model.init_hidden()
         pred = model(sent1, sent2)
         # pdb.set_trace()
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        #pred_label = pred.data.max(1)[1].cpu().numpy()
+        #pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
@@ -98,34 +98,10 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    acc = tot_correct*100./tot_samples
+    # pdb.set_trace()
+    acc = tot_correct/tot_samples
+    # pdb.set_trace()
     return avg_loss, acc
-
-
-# def train_epoch(model, train_iter, loss_function, optimizer):
-#     model.train()
-#     avg_loss = 0.0
-#     truth_res = []
-#     pred_res = []
-#     count = 0
-#     for batch in train_iter:
-#         sent1, sent2, label = batch.text1, batch.text2, batch.label
-#         label.data.sub_(1)
-#         truth_res += list(label.data)
-#         model.batch_size = len(label.data)
-#         model.hidden = model.init_hidden()
-#         pred = model(sent1, sent2)
-#         pred_label = pred.data.max(1)[1].numpy()
-#         pred_res += [x for x in pred_label]
-#         model.zero_grad()
-#         loss = loss_function(pred, label)
-#         avg_loss += loss.data[0]
-#         count += 1
-#         loss.backward()
-#         optimizer.step()
-#     avg_loss /= len(train_iter)
-#     acc = get_accuracy(truth_res, pred_res)
-#     return avg_loss, acc
 
 
 def evaluate(model, data, loss_function, name, USE_GPU):
@@ -155,20 +131,21 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
         pred = model(sent1, sent2)
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        #pred_label = pred.data.max(1)[1].cpu().numpy()
+        #pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(data)
-    # acc = get_accuracy(truth_res, pred_res)
+    #acc = get_accuracy(truth_res, pred_res)
+    # pdb.set_trace()
     acc = tot_correct*100./tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
 
 def load_nli(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/NLI/', train='train.tsv',
+    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
@@ -206,7 +183,7 @@ text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 train_iter, dev_iter, test_iter = load_nli(text_field, label_field, BATCH_SIZE)
 
-model = BiLSTMInference(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+model = BiLSTMDuplicate(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE)
 
 if USE_GPU:
@@ -237,13 +214,14 @@ optimizer = optim.Adam(model.parameters(), lr=1e-3)
 loss_function = nn.NLLLoss()
 
 print('Training...')
-out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsNLI", timestamp))
+out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsQuora", timestamp))
 print("Writing to {}\n".format(out_dir))
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
+    torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
     if dev_acc > best_dev_acc:
         if best_dev_acc > 0:
