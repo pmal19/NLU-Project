@@ -145,8 +145,8 @@ def evaluate(model, data, loss_function, name, USE_GPU):
 
 
 def load_quora(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
-                                                  validation='dev.tsv', test='test.tsv', format='tsv',
+    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='quoraTrain.tsv',
+                                                  validation='quoraDev.tsv', test='quoraDev.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
