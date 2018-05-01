@@ -1,0 +1,14 @@
+Train epoch 1:   0%|          | 0/217 [00:00<?, ?it/s]Load word embeddings...
+Training...
+Writing to /home/pm2758/NLUProject/py_clone/runsNLIonSST/1525194830
+
+./compTrainNLIonSST.py:178: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
+  log_probs = F.log_softmax(y)
+Train epoch 1:   0%|          | 1/217 [00:00<00:42,  5.07it/s]Train epoch 1:   7%|6         | 15/217 [00:00<00:04, 50.38it/s]Train epoch 1:  14%|#3        | 30/217 [00:00<00:02, 75.11it/s]Train epoch 1:  21%|##        | 45/217 [00:00<00:01, 89.65it/s]Train epoch 1:  28%|##7       | 60/217 [00:00<00:01, 98.99it/s]Train epoch 1:  35%|###4      | 75/217 [00:00<00:01, 105.38it/s]Train epoch 1:  41%|####1     | 90/217 [00:00<00:01, 110.59it/s]Train epoch 1:  48%|####8     | 105/217 [00:00<00:00, 114.08it/s]Train epoch 1:  55%|#####5    | 120/217 [00:01<00:00, 117.17it/s]Train epoch 1:  62%|######2   | 135/217 [00:01<00:00, 119.70it/s]Train epoch 1:  69%|######9   | 150/217 [00:01<00:00, 122.00it/s]Train epoch 1:  76%|#######6  | 165/217 [00:01<00:00, 123.80it/s]Train epoch 1:  83%|########2 | 180/217 [00:01<00:00, 125.44it/s]Train epoch 1:  90%|########9 | 195/217 [00:01<00:00, 126.62it/s]Train epoch 1:  97%|#########6| 210/217 [00:01<00:00, 127.63it/s]Train epoch 1: 100%|##########| 217/217 [00:01<00:00, 125.20it/s]
+Train: loss 0.69 acc 52.8
+Traceback (most recent call last):
+  File "./compTrainNLIonSST.py", line 242, in <module>
+    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
+  File "./compTrainNLIonSST.py", line 120, in evaluate
+    acc = tot_correct*100./tot_samples
+ZeroDivisionError: float division by zero
