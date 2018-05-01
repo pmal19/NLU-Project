@@ -67,28 +67,16 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     tot_samples = 0.0
     count = 0
     for batch in tqdm(train_iter, desc='Train epoch '+str(epoch+1)):
-        sent1, sent2, label = batch.text1, batch.text2, batch.label
-        maxlen=max(sent1.shape[0], sent2.shape[0])
+        sent, label = batch.text, batch.label
         if USE_GPU:
-            sent1, sent2, label = sent1.cuda(), sent2.cuda(), label.cuda()
-        if(sent1.shape[0]==maxlen):
-            if USE_GPU:
-                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long().cuda()])    
-            else:
-                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long()])
-        else:
-            if USE_GPU:
-                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long().cuda()])
-            else:
-                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long()])
+            sent, label = sent.cuda(), label.cuda()
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        # model.hidden = model.init_hidden()
-        pred = model(sent1, sent2)
-        # pdb.set_trace()
-        #pred_label = pred.data.max(1)[1].cpu().numpy()
-        #pred_res += [x for x in pred_label]
+        # model.hidden = model.inits_hidden()
+        pred = model(sent)
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
@@ -98,9 +86,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    # pdb.set_trace()
     acc = tot_correct/tot_samples
-    # pdb.set_trace()
     return avg_loss, acc
 
 
@@ -112,49 +98,37 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     tot_correct = 0.0
     tot_samples = 0.0
     for batch in data:
-        sent1, sent2, label = batch.text1, batch.text2, batch.label
-        maxlen=max(sent1.shape[0], sent2.shape[0])
+        sent, label = batch.text, batch.label
         if USE_GPU:
-            sent1, sent2, label = sent1.cuda(), sent2.cuda(), label.cuda()
-        if(sent1.shape[0]==maxlen):
-            if USE_GPU:
-                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long().cuda()])    
-            else:
-                sent2=torch.cat([sent2,Variable(torch.ones(maxlen-sent2.shape[0],sent1.shape[1])).long()])
-        else:
-            if USE_GPU:
-                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long().cuda()])
-            else:
-                sent1=torch.cat([sent1,Variable(torch.ones(maxlen-sent1.shape[0],sent1.shape[1])).long()])
+            sent, label = sent.cuda(), label.cuda()
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
         # model.hidden = model.init_hidden()
-        pred = model(sent1, sent2)
-        #pred_label = pred.data.max(1)[1].cpu().numpy()
-        #pred_res += [x for x in pred_label]
+        pred = model(sent)
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
     avg_loss /= len(data)
-    #acc = get_accuracy(truth_res, pred_res)
-    # pdb.set_trace()
+    # acc = get_accuracy(truth_res, pred_res)
     acc = tot_correct*100./tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
 
-def load_nli(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/NLI/', train='train.tsv',
+def load_sst(text_field, label_field, batch_size):
+    train, dev, test = data.TabularDataset.splits(path='./data/SST2/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
-                                                  fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
+                                                  fields=[('text', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
-    # train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-    #             batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: data.interleave_keys(len(x.text1),len(x.text2)), repeat=False, device=-1)
-    ## for GPU run
     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: max(len(x.text1),len(x.text2)), repeat=False, device=None)
+                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=-1)
+    ## for GPU run
+#     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
+#                 batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=None)
     return train_iter, dev_iter, test_iter
 
 
@@ -165,42 +139,38 @@ def load_nli(text_field, label_field, batch_size):
 #     return optimizer
 
 
-class BiLSTMCompSSTonNLI(nn.Module):
+class BiLSTMCompNLIonSST(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, sst_path, dropout=0.5):
-        super(BiLSTMCompSSTonNLI, self).__init__()
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, nli_path, dropout=0.5):
+        super(BiLSTMCompNLIonSST, self).__init__()
         self.hidden_dim = hidden_dim
         self.use_gpu = use_gpu
         self.batch_size = batch_size
         self.dropout = dropout
 
-
-        loaded = torch.load(sst_path)
-        #self.lstmSentiment = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
-        newModel = self.lstmSentiment.state_dict()
+        loaded = torch.load(nli_path)
+        # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
+        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmInference.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
         newModel.update(pretrained_dict)
-        self.lstmSentiment.load_state_dict(newModel)
-        # print(self.lstmSentiment)
-        # print(self.lstmSentiment.lstmSentiment)
-        for param in self.lstmSentiment.parameters():
+        self.lstmInference.load_state_dict(newModel)
+        # print(self.lstmInference)
+        # print(self.lstmInference.lstmInference)
+        for param in self.lstmInference.parameters():
             param.requires_grad = False
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.hidden2labelMLP = nn.Linear(hidden_dim*4, label_size)
+        self.hidden2labelMLP = nn.Linear(hidden_dim*2, label_size)
 
-    def forward(self, sentence1, sentence2):
+    def forward(self, sentence1):
         # pdb.set_trace()
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
-        x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
         # x = torch.cat((x1, x2), 2)
-        lstm_out1 = self.lstmSentiment(x1)
-        lstm_out2 = self.lstmSentiment(x2)
+        lstm_out1 = self.lstmInference(x1)
         # pdb.set_trace()
-        lstm_out = torch.cat((lstm_out1, lstm_out2), 1)
-        y = self.hidden2labelMLP(lstm_out)
+        y = self.hidden2labelMLP(lstm_out1)
         log_probs = F.log_softmax(y)
         return log_probs
 
@@ -223,10 +193,10 @@ best_dev_acc = 0.0
 
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter, test_iter = load_nli(text_field, label_field, BATCH_SIZE)
+train_iter, dev_iter, test_iter = load_sst(text_field, label_field, BATCH_SIZE)
 
-model = BiLSTMCompSSTonNLI(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
-                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path="best_model_sst/best_model.pth")
+model = BiLSTMCompNLIonSST(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, nli_path="best_model_nli/best_model.pth")
 
 if USE_GPU:
     model = model.cuda()
@@ -257,7 +227,7 @@ optimizer = optim.Adam(filter(lambda param: param.requires_grad,model.parameters
 loss_function = nn.NLLLoss()
 
 print('Training...')
-out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsSSTonNLI", timestamp))
+out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsNLIonSST", timestamp))
 print("Writing to {}\n".format(out_dir))
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
