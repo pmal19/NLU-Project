@@ -359,7 +359,7 @@ class sentiment(nn.Module):
                     Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
     def forward(self, sentence):
         # x = self.embeddings(sentence).view(len(sentence), self.batch_size, -1)
-        lstm_out, self.hidden = self.lstmSentiment(sentence, self.hidden)
+        lstm_out, _ = self.lstmSentiment(sentence, self.hidden)
         return lstm_out[-1]
 
 
@@ -385,7 +385,7 @@ class inference(nn.Module):
                     Variable(torch.zeros(2, self.batch_size, self.hidden_dim)))
     def forward(self, sentence):
         # x = self.embeddings(sentence).view(len(sentence), self.batch_size, -1)
-        lstm_out, self.hidden = self.lstmInference(sentence, self.hidden)
+        lstm_out, _ = self.lstmInference(sentence, self.hidden)
         return lstm_out[-1]
 
 

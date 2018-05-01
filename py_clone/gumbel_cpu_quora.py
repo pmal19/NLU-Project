@@ -84,9 +84,9 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        model.hidden = model.init_hidden()
+        #model.hidden = model.init_hidden()
         pred, _ = model(sent1, sent2)
-        pdb.set_trace()
+        #pdb.set_trace()
         pred_label = pred.data.max(1)[1].numpy()
         pred_res += [x for x in pred_label]
         model.zero_grad()
@@ -168,7 +168,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
 
 
 def load_nli(text_field, label_field, batch_size):
-    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='dev.tsv',
+    train, dev, test = data.TabularDataset.splits(path='./data/Quora/', train='train.tsv',
                                                   validation='dev.tsv', test='test.tsv', format='tsv',
                                                   fields=[('text1', text_field), ('text2', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
@@ -212,7 +212,7 @@ model = GumbelQuora(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_si
 
 if USE_GPU:
     model = model.cuda()
-pdb.set_trace()
+#pdb.set_trace()
 
 print('Load word embeddings...')
 # # glove
