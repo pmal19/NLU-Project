@@ -196,6 +196,9 @@ model = BiLSTMCompQuoraonSST(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM,
 if USE_GPU:
     model = model.cuda()
 
+FloatTensor = torch.cuda.FloatTensor if USE_GPU else torch.FloatTensor
+LongTensor = torch.cuda.LongTensor if USE_GPU else torch.LongTensor
+Tensor = FloatTensor
 
 print('Load word embeddings...')
 # # glove
