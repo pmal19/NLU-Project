@@ -171,14 +171,14 @@ class BiLSTMCompQuoraonNLI(nn.Module):
         loaded = torch.load(quora_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
-        newModel = self.lstmInference.state_dict()
+        newModel = self.lstmDuplicate.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
         newModel.update(pretrained_dict)
-        self.lstmInference.load_state_dict(newModel)
+        self.lstmDuplicate.load_state_dict(newModel)
         # print(self.lstmInference)
         # print(self.lstmInference.lstmInference)
-        for param in self.lstmInference.parameters():
+        for param in self.lstmDuplicate.parameters():
             param.requires_grad = False
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
