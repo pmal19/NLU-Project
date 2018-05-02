@@ -77,7 +77,6 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(train_iter)*train_iter.batch_size)
     acc = 0.0
-    acc.type(tot_correct.type())
     acc = tot_correct/tot_samples
     return avg_loss, acc
 
