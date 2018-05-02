@@ -172,14 +172,14 @@ class BiLSTMCompSSTonQuora(nn.Module):
         loaded = torch.load(sst_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
-        newModel = self.lstmInference.state_dict()
+        newModel = self.lstmSentiment.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
         newModel.update(pretrained_dict)
-        self.lstmInference.load_state_dict(newModel)
+        self.lstmSentiment.load_state_dict(newModel)
         # print(self.lstmInference)
         # print(self.lstmInference.lstmInference)
-        for param in self.lstmInference.parameters():
+        for param in self.lstmSentiment.parameters():
             param.requires_grad = False
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
