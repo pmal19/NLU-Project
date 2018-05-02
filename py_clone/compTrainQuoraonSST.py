@@ -235,7 +235,7 @@ for epoch in range(EPOCHS):
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, float(acc.data[0])*100./(len(train_iter)*train_iter.batch_size)))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_avg_loss, dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    print('Dev' + ': loss %.2f acc %.1f' % (dev_avg_loss, float(dev_acc.data[0])*100./(len(dev_iter)*dev_iter.batch_size)))   # if dev_acc > best_dev_acc:
+    print('Dev' + ': loss %.2f acc %.1f' % (dev_avg_loss, float(dev_acc)*100./(len(dev_iter)*dev_iter.batch_size)))   # if dev_acc > best_dev_acc:
     #     if best_dev_acc > 0:
     #         os.system('rm '+ out_dir + '/best_model' + '.pth')
     #     best_dev_acc = dev_acc
