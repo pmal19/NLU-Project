@@ -109,7 +109,6 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(data)*data.batch_size)
     acc = 0.0
-    acc.type(tot_correct.type())
     acc = tot_correct/tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
