@@ -71,8 +71,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         avg_loss += loss.data[0]
         loss.backward()
         optimizer.step()
-        count = ((pred.max(1)[1]==label).long()).sum()
-        tot_correct += count
+        tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(train_iter)*train_iter.batch_size)
@@ -87,7 +86,6 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     pred_res = []
     tot_correct = 0.0
     tot_samples = 0.0
-    count = 0
     for batch in data:
         sent, label = batch.text, batch.label
         if sent.shape[1] != 32:
@@ -103,8 +101,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        count = ((pred.max(1)[1]==label).long()).sum()
-        tot_correct += count
+        tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(data)*data.batch_size)
