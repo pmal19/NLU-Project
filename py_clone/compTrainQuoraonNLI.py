@@ -85,6 +85,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         loss.backward()
         optimizer.step()
         tot_correct += float((pred.max(1)[1]==label).sum())
+        pdb.set_trace()
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     # pdb.set_trace()
