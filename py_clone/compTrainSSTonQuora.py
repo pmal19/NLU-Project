@@ -183,7 +183,7 @@ class BiLSTMCompSSTonQuora(nn.Module):
             param.requires_grad = False
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.hidden2labelMLP = nn.Linear(hidden_dim*2, label_size)
+        self.hidden2labelMLP = nn.Linear(hidden_dim*4, label_size)
 
     def forward(self, sentence1, sentence2):
         # pdb.set_trace()
