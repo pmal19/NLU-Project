@@ -736,8 +736,8 @@ class GumbelSST(nn.Module):
         # x = torch.cat((x1, x2), 2)
         # sst_out, self.hidden = self.sst_lstm(x, self.hidden)
         # nli_out, self.hidden = self.nli_lstm(x, self.hidden)
-        sst_out = self.lstmSentiment(x1)
-        # sst_out2 = self.lstmSentiment(x2)
+        sst_out = self.lstmInference(x1)
+        # sst_out2 = self.lstmInference(x2)
         # sst_out = torch.cat((sst_out1, sst_out2), 1)
 
         nli_out = self.lstmDuplicate(x1)
