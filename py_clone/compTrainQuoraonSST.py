@@ -1,6 +1,7 @@
 import sys
 #sys.path.insert(0,"/home/pm2758/etc/text")
 import torch
+
 import torch.nn as nn
 from torch import optim
 import time, random
@@ -69,15 +70,16 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        count += 1
         loss.backward()
         optimizer.step()
-        tot_correct += float((pred.max(1)[1]==label).sum())
+        tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    tot_samples = len(train_iter)*train_iter.batch_size
-    acc = tot_correct/tot_samples
-    return avg_loss, acc
+    # tot_samples = (len(train_iter)*train_iter.batch_size)
+    # acc = 0.0
+    # acc.type(tot_correct.type())
+    # acc = tot_correct/tot_samples
+    return avg_loss, tot_correct
 
 
 def evaluate(model, data, loss_function, name, USE_GPU):
@@ -102,13 +104,14 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        tot_correct += float((pred.max(1)[1]==label).sum())
+        tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
-    tot_samples = len(data)*data.batch_size
-    acc = tot_correct/tot_samples
-    print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
-    return acc
+    tot_samples = (len(data)*data.batch_size)
+    # acc = 0.0
+    # acc = tot_correct/tot_samples
+    print(name + ': loss %.2f acc %.1f' % (avg_loss, tot_correct*100./(len(data)*data.batch_size)))
+    return tot_correct
 
 
 def load_sst(text_field, label_field, batch_size):
@@ -169,7 +172,6 @@ class BiLSTMCompQuoraonSST(nn.Module):
 
 
 
-
 args = argparse.ArgumentParser()
 args.add_argument('--m', dest='model', default='lstm', help='specify the mode to use (default: lstm)')
 args = args.parse_args()
@@ -226,16 +228,16 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
-    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
+    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100./(len(train_iter)*train_iter.batch_size)))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    if dev_acc > best_dev_acc:
-        if best_dev_acc > 0:
-            os.system('rm '+ out_dir + '/best_model' + '.pth')
-        best_dev_acc = dev_acc
-        best_model = model
-        torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
-        # evaluate on test with the best dev performance model
-        test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
+    # if dev_acc > best_dev_acc:
+    #     if best_dev_acc > 0:
+    #         os.system('rm '+ out_dir + '/best_model' + '.pth')
+    #     best_dev_acc = dev_acc
+    #     best_model = model
+    #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
+    #     # evaluate on test with the best dev performance model
+    #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
 test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
