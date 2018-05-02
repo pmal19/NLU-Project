@@ -124,11 +124,11 @@ def load_sst(text_field, label_field, batch_size):
                                                   fields=[('text', text_field), ('label', label_field)])
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
-    train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=-1)
+    # train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
+    #             batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=-1)
     ## for GPU run
-#     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-#                 batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=None)
+    train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
+                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=None)
     return train_iter, dev_iter, test_iter
 
 
@@ -155,7 +155,7 @@ best_dev_acc = 0.0
 
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
-train_iter, dev_iter, test_iter = load_nli(text_field, label_field, BATCH_SIZE)
+train_iter, dev_iter, test_iter = load_sst(text_field, label_field, BATCH_SIZE)
 
 quora_path = "best_model_quora/best_model.pth"
 sst_path = "best_model_sst/best_model.pth"
