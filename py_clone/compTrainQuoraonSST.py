@@ -27,7 +27,7 @@ def load_bin_vec(fname, vocab):
     with open(fname, "rb") as f:
         header = f.readline()
         vocab_size, layer1_size = map(int, header.split())
-        binary_len = np.dtype('float').itemsize * layer1_size
+        binary_len = np.dtype('float32').itemsize * layer1_size
         for line in range(vocab_size):
             word = []
             while True:
@@ -38,7 +38,7 @@ def load_bin_vec(fname, vocab):
                 if ch != '\n':
                     word.append(ch)
             if word in vocab:
-               word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float')
+               word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')
             else:
                 f.read(binary_len)
     return word_vecs
@@ -69,11 +69,12 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
+        count += 1
+        loss.backward()
+        optimizer.step()
         for val in (pred.max(1)[1]==label):
             if val:
                 tot_correct += 1
-        loss.backward()
-        optimizer.step()
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(train_iter)*train_iter.batch_size).long()
@@ -106,7 +107,6 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         for val in (pred.max(1)[1]==label):
             if val:
                 tot_correct += 1
-        # tot_correct += ((pred.max(1)[1]==label).float()).sum()
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(data)*data.batch_size).long()
