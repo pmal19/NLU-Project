@@ -243,7 +243,7 @@ for epoch in range(EPOCHS):
     #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
     #     # evaluate on test with the best dev performance model
     #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
-test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
-print('FinalTest' + ': loss %.2f acc %.1f' % (test_avg_loss, float(test_acc.data[0])*100./(len(test_iter)*test_iter.batch_size))  
+test_avg_loss, test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
+print('FinalTest' + ': loss %.2f acc %.1f' % (test_avg_loss, float(test_acc.data[0])*100./(len(test_iter)*test_iter.batch_size))   
 
 
