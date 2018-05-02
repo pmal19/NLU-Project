@@ -77,7 +77,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(train_iter)*train_iter.batch_size)
     acc = 0.0
-    acc = tot_correct/tot_samples
+    acc = (tot_correct/tot_samples).type(torch.FloatTensor)
     return avg_loss, acc
 
 
