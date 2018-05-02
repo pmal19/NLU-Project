@@ -19,7 +19,7 @@ torch.set_num_threads(8)
 torch.manual_seed(1)
 random.seed(1)
 
-torch.set_default_tensor_type(‘torch.cuda.FloatTensor’)
+
 def load_bin_vec(fname, vocab):
     """
     Loads 300x1 word vecs from Google (Mikolov) word2vec
@@ -168,7 +168,7 @@ class BiLSTMCompQuoraonSST(nn.Module):
         return log_probs
 
 
-
+torch.set_default_tensor_type(‘torch.cuda.FloatTensor’)
 
 args = argparse.ArgumentParser()
 args.add_argument('--m', dest='model', default='lstm', help='specify the mode to use (default: lstm)')
