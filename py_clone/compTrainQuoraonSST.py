@@ -76,6 +76,8 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(train_iter)*train_iter.batch_size)
+    acc = 0.0
+    acc.type(tot_correct.type())
     acc = tot_correct/tot_samples
     return avg_loss, acc
 
@@ -106,6 +108,8 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(data)*data.batch_size)
+    acc = 0.0
+    acc.type(tot_correct.type())
     acc = tot_correct/tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
@@ -168,7 +172,6 @@ class BiLSTMCompQuoraonSST(nn.Module):
         return log_probs
 
 
-torch.set_default_tensor_type(‘torch.cuda.FloatTensor’)
 
 args = argparse.ArgumentParser()
 args.add_argument('--m', dest='model', default='lstm', help='specify the mode to use (default: lstm)')
