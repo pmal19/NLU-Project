@@ -751,8 +751,8 @@ class GumbelSST(nn.Module):
         selector=self.st_gumbel_softmax(out_l3)
         r1 = selector[:,0]
         r2 = selector[:,1]
-        r11 = r1.repeat(self.hidden_dim*4,1)
-        r22 = r2.repeat(self.hidden_dim*4,1)
+        r11 = r1.repeat(self.hidden_dim*2,1)
+        r22 = r2.repeat(self.hidden_dim*2,1)
         # pdb.set_trace()
         rf = torch.cat((r11,r22),0).transpose(0,1)
         
