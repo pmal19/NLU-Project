@@ -75,11 +75,11 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    # tot_samples = (len(train_iter)*train_iter.batch_size)
-    # acc = 0.0
-    # acc.type(tot_correct.type())
-    # acc = tot_correct/tot_samples
-    return avg_loss, tot_correct
+    tot_samples = (len(train_iter)*train_iter.batch_size)
+    acc = 0.0
+    acc.type(tot_correct.type())
+    acc = tot_correct/tot_samples
+    return avg_loss, acc
 
 
 def evaluate(model, data, loss_function, name, USE_GPU):
@@ -108,10 +108,10 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(data)*data.batch_size)
-    # acc = 0.0
-    # acc = tot_correct/tot_samples
-    print(name + ': loss %.2f acc %.1f' % (avg_loss, tot_correct*100./(len(data)*data.batch_size)))
-    return tot_correct
+    acc = 0.0
+    acc = tot_correct/tot_samples
+    print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
+    return acc
 
 
 def load_sst(text_field, label_field, batch_size):
@@ -196,9 +196,6 @@ model = BiLSTMCompQuoraonSST(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM,
 if USE_GPU:
     model = model.cuda()
 
-FloatTensor = torch.cuda.FloatTensor if USE_GPU else torch.FloatTensor
-LongTensor = torch.cuda.LongTensor if USE_GPU else torch.LongTensor
-Tensor = FloatTensor
 
 print('Load word embeddings...')
 # # glove
@@ -231,16 +228,16 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
-    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, (acc.type(torch.FloatTensor))*100./(len(train_iter)*train_iter.batch_size)))
+    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    # if dev_acc > best_dev_acc:
-    #     if best_dev_acc > 0:
-    #         os.system('rm '+ out_dir + '/best_model' + '.pth')
-    #     best_dev_acc = dev_acc
-    #     best_model = model
-    #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
-    #     # evaluate on test with the best dev performance model
-    #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
+    if dev_acc > best_dev_acc:
+        if best_dev_acc > 0:
+            os.system('rm '+ out_dir + '/best_model' + '.pth')
+        best_dev_acc = dev_acc
+        best_model = model
+        torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
+        # evaluate on test with the best dev performance model
+        test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
 test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
