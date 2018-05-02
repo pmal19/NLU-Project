@@ -231,7 +231,7 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
-    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100./(len(train_iter)*train_iter.batch_size)))
+    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, (acc.type(torch.FloatTensor))*100./(len(train_iter)*train_iter.batch_size)))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
     # if dev_acc > best_dev_acc:
