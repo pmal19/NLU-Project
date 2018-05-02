@@ -83,7 +83,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
 
 
 def evaluate(model, data, loss_function, name, USE_GPU):
-    # model.eval()
+    model.eval()
     avg_loss = 0.0
     truth_res = []
     pred_res = []
@@ -107,10 +107,11 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
-    # tot_samples = (len(data)*data.batch_size)
+    tot_samples = (len(data)*data.batch_size)
     # acc = 0.0
     # acc = tot_correct/tot_samples
-    return avg_loss,tot_correct
+    print(name + ': loss %.2f acc %.1f' % (avg_loss, tot_correct*100./(len(data)*data.batch_size)))
+    return tot_correct
 
 
 def load_sst(text_field, label_field, batch_size):
@@ -230,12 +231,10 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
-    # print(acc,acc.float(),acc.float()*100./(len(train_iter)*train_iter.batch_size))
-    # print(acc.data[0],float(acc.data[0]),float(acc.data[0])*100./(len(train_iter)*train_iter.batch_size))
-    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, float(acc.data[0])*100./(len(train_iter)*train_iter.batch_size)))
+    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100./(len(train_iter)*train_iter.batch_size)))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
-    dev_avg_loss, dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    print('Dev' + ': loss %.2f acc %.1f' % (dev_avg_loss, float(dev_acc)*100./(len(dev_iter)*dev_iter.batch_size)))   # if dev_acc > best_dev_acc:
+    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
+    # if dev_acc > best_dev_acc:
     #     if best_dev_acc > 0:
     #         os.system('rm '+ out_dir + '/best_model' + '.pth')
     #     best_dev_acc = dev_acc
@@ -243,7 +242,5 @@ for epoch in range(EPOCHS):
     #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
     #     # evaluate on test with the best dev performance model
     #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
-test_avg_loss, test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
-print('FinalTest' + ': loss %.2f acc %.1f' % (test_avg_loss, float(test_acc.data[0])*100./(len(test_iter)*test_iter.batch_size)) )  
-
+test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
