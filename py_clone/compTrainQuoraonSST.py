@@ -108,7 +108,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
     # acc = get_accuracy(truth_res, pred_res)
     tot_samples = (len(data)*data.batch_size)
     acc = 0.0
-    acc = tot_correct/tot_samples
+    acc = (tot_correct/tot_samples).type(torch.FloatTensor)
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
