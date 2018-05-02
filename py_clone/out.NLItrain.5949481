@@ -1,15 +1,0 @@
-Train epoch 1:   0%|          | 0/17168 [00:00<?, ?it/s]Load word embeddings...
-Training...
-Writing to /home/pm2758/NLUProject/py_clone/runsNLI/1525136195
-
-/home/pm2758/NLUProject/py_clone/biLSTMs.py:72: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
-  log_probs = F.log_softmax(y)
-Exception KeyError: KeyError(<weakref at 0x2ad54368afc8; to 'tqdm' at 0x2ad542deddd0>,) in <bound method tqdm.__del__ of Train epoch 1:   0%|          | 0/17168 [00:00<?, ?it/s]> ignored
-Traceback (most recent call last):
-  File "./train_batch_nli.py", line 245, in <module>
-    avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
-  File "./train_batch_nli.py", line 98, in train_epoch_progress
-    tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
-  File "./train_batch_nli.py", line 56, in get_accuracy2
-    tot_correct += double((torch.max(pred, 1)[1].view(label.size()) == label).sum())
-NameError: global name 'double' is not defined
