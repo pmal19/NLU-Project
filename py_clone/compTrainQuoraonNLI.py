@@ -88,7 +88,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     # pdb.set_trace()
-    tot_samples = len(data)*data.batch_size
+    tot_samples = len(train_iter)*train_iter.batch_size
     acc = tot_correct/tot_samples
     # pdb.set_trace()
     return avg_loss, acc
@@ -170,7 +170,7 @@ class BiLSTMCompQuoraonNLI(nn.Module):
 
         loaded = torch.load(quora_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmInference.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
@@ -183,6 +183,21 @@ class BiLSTMCompQuoraonNLI(nn.Module):
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.hidden2labelMLP = nn.Linear(hidden_dim*2, label_size)
+
+    def forward(self, sentence1, sentence2):
+        # pdb.set_trace()
+        x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
+        x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
+        # x = torch.cat((x1, x2), 2)
+        lstm_out1 = self.lstmDuplicate(x1)
+        lstm_out2 = self.lstmDuplicate(x2)
+        # pdb.set_trace()
+        lstm_out = torch.cat((lstm_out1, lstm_out2), 1)
+        y = self.hidden2labelMLP(lstm_out)
+        log_probs = F.log_softmax(y)
+        return log_probs
+
+
 
 
 

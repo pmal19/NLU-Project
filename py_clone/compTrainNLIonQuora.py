@@ -89,7 +89,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     # pdb.set_trace()
-    tot_samples = len(data)*data.batch_size
+    tot_samples = len(train_iter)*train_iter.batch_size
     acc = tot_correct/tot_samples
     # pdb.set_trace()
     return avg_loss, acc
@@ -185,7 +185,7 @@ class BiLSTMCompNLIonQuora(nn.Module):
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.hidden2labelMLP = nn.Linear(hidden_dim*2, label_size)
 
-    def forward(self, sentence1):
+    def forward(self, sentence1, sentence2):
         # pdb.set_trace()
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
         x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)

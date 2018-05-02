@@ -75,7 +75,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         tot_correct += float((pred.max(1)[1]==label).sum())
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    tot_samples = len(data)*data.batch_size
+    tot_samples = len(train_iter)*data.batch_size
     acc = tot_correct/tot_samples
     return avg_loss, acc
 
@@ -143,7 +143,7 @@ class BiLSTMCompQuoraonSST(nn.Module):
 
         loaded = torch.load(quora_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmInference.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
@@ -161,7 +161,7 @@ class BiLSTMCompQuoraonSST(nn.Module):
         # pdb.set_trace()
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
         # x = torch.cat((x1, x2), 2)
-        lstm_out1 = self.lstmInference(x1)
+        lstm_out1 = self.lstmDuplicate(x1)
         # pdb.set_trace()
         y = self.hidden2labelMLP(lstm_out1)
         log_probs = F.log_softmax(y)

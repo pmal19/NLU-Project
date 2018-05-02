@@ -88,7 +88,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
     # pdb.set_trace()
-    tot_samples = len(data)*data.batch_size
+    tot_samples = len(train_iter)*train_iter.batch_size
     acc = tot_correct/tot_samples
     # pdb.set_trace()
     return avg_loss, acc
@@ -171,7 +171,7 @@ class BiLSTMCompSSTonQuora(nn.Module):
 
         loaded = torch.load(sst_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmInference.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
