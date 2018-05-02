@@ -44,19 +44,6 @@ def load_bin_vec(fname, vocab):
     return word_vecs
 
 
-def get_accuracy(truth, pred):
-    assert len(truth) == len(pred)
-    right = 0
-    for i in range(len(truth)):
-        if truth[i] == pred[i]:
-            right += 1.0
-    return right / len(truth)
-
-def get_accuracy2(tot_correct, tot_samples, label, pred):
-    tot_correct += long((torch.max(pred, 1)[1].view(label.size()) == label).sum())
-    tot_samples += long((label.shape[0]))
-    return tot_correct, tot_samples
-
 
 def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU):
     model.train()
@@ -85,9 +72,12 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         count += 1
         loss.backward()
         optimizer.step()
-        tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
+        for val in (pred.max(1)[1]==label):
+            if val:
+                tot_correct += 1
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
+    tot_samples = (len(train_iter)*train_iter.batch_size).long()
     acc = tot_correct/tot_samples
     return avg_loss, acc
 
@@ -114,10 +104,13 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
+        for val in (pred.max(1)[1]==label):
+            if val:
+                tot_correct += 1
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
-    acc = tot_correct*100./tot_samples
+    tot_samples = (len(data)*data.batch_size).long()
+    acc = tot_correct/tot_samples
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
@@ -154,15 +147,15 @@ class BiLSTMCompQuoraonSST(nn.Module):
 
         loaded = torch.load(quora_path)
         # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
-        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
-        newModel = self.lstmInference.state_dict()
+        self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmDuplicate.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         # print(pretrained_dict)
         newModel.update(pretrained_dict)
-        self.lstmInference.load_state_dict(newModel)
+        self.lstmDuplicate.load_state_dict(newModel)
         # print(self.lstmInference)
         # print(self.lstmInference.lstmInference)
-        for param in self.lstmInference.parameters():
+        for param in self.lstmDuplicate.parameters():
             param.requires_grad = False
 
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
@@ -172,7 +165,7 @@ class BiLSTMCompQuoraonSST(nn.Module):
         # pdb.set_trace()
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
         # x = torch.cat((x1, x2), 2)
-        lstm_out1 = self.lstmInference(x1)
+        lstm_out1 = self.lstmDuplicate(x1)
         # pdb.set_trace()
         y = self.hidden2labelMLP(lstm_out1)
         log_probs = F.log_softmax(y)
@@ -231,7 +224,7 @@ optimizer = optim.Adam(filter(lambda param: param.requires_grad,model.parameters
 loss_function = nn.NLLLoss()
 
 print('Training...')
-out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsNLIonSST", timestamp))
+out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsQuoraonSST", timestamp))
 print("Writing to {}\n".format(out_dir))
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
@@ -239,14 +232,14 @@ for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
-    # dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    # if dev_acc > best_dev_acc:
-    #     if best_dev_acc > 0:
-    #         os.system('rm '+ out_dir + '/best_model' + '.pth')
-    #     best_dev_acc = dev_acc
-    #     best_model = model
-    #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
-    #     # evaluate on test with the best dev performance model
-    #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
+    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
+    if dev_acc > best_dev_acc:
+        if best_dev_acc > 0:
+            os.system('rm '+ out_dir + '/best_model' + '.pth')
+        best_dev_acc = dev_acc
+        best_model = model
+        torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
+        # evaluate on test with the best dev performance model
+        test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
 test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
