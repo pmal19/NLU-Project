@@ -1,0 +1,74 @@
+SST eval mode: Preserving only top node label.
+('Time taken - ', 332.62937092781067)
+('Epoch start - ', 0)
+./sstBase.py:60: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
+  output = F.log_softmax(self.classifierSst(features))
+Train Epoch: 0 [0/318582 (0%)]	Loss: 3.904999	Dev Loss: 108.835060	Dev Acc: 20.799273
+Train Epoch: 0 [6400/318582 (2%)]	Loss: 0.837953	Dev Loss: 46.772560	Dev Acc: 21.071753
+Train Epoch: 0 [12800/318582 (4%)]	Loss: 0.950150	Dev Loss: 43.060863	Dev Acc: 20.890100
+Train Epoch: 0 [19200/318582 (6%)]	Loss: 0.795762	Dev Loss: 46.585918	Dev Acc: 20.799273
+Train Epoch: 0 [25600/318582 (8%)]	Loss: 0.724122	Dev Loss: 43.625385	Dev Acc: 20.799273
+Train Epoch: 0 [32000/318582 (10%)]	Loss: 1.072413	Dev Loss: 44.520424	Dev Acc: 20.799273
+Train Epoch: 0 [38400/318582 (12%)]	Loss: 0.962611	Dev Loss: 39.907234	Dev Acc: 20.799273
+Train Epoch: 0 [44800/318582 (14%)]	Loss: 0.737171	Dev Loss: 40.749733	Dev Acc: 20.799273
+Train Epoch: 0 [51200/318582 (16%)]	Loss: 1.024419	Dev Loss: 41.114227	Dev Acc: 20.799273
+Train Epoch: 0 [57600/318582 (18%)]	Loss: 0.868230	Dev Loss: 45.803162	Dev Acc: 20.799273
+Train Epoch: 0 [64000/318582 (20%)]	Loss: 0.845239	Dev Loss: 46.993740	Dev Acc: 20.799273
+Train Epoch: 0 [70400/318582 (22%)]	Loss: 0.991553	Dev Loss: 40.624680	Dev Acc: 20.799273
+Train Epoch: 0 [76800/318582 (24%)]	Loss: 0.764440	Dev Loss: 43.517326	Dev Acc: 20.799273
+Train Epoch: 0 [83200/318582 (26%)]	Loss: 0.564098	Dev Loss: 46.700542	Dev Acc: 20.799273
+Train Epoch: 0 [89600/318582 (28%)]	Loss: 1.045909	Dev Loss: 44.682106	Dev Acc: 20.799273
+Train Epoch: 0 [96000/318582 (30%)]	Loss: 0.613582	Dev Loss: 42.466866	Dev Acc: 20.799273
+Train Epoch: 0 [102400/318582 (32%)]	Loss: 0.878931	Dev Loss: 42.271179	Dev Acc: 20.799273
+Train Epoch: 0 [108800/318582 (34%)]	Loss: 0.857443	Dev Loss: 43.504528	Dev Acc: 20.799273
+Train Epoch: 0 [115200/318582 (36%)]	Loss: 0.907783	Dev Loss: 44.416481	Dev Acc: 20.799273
+Train Epoch: 0 [121600/318582 (38%)]	Loss: 1.220377	Dev Loss: 44.291454	Dev Acc: 20.799273
+Train Epoch: 0 [128000/318582 (40%)]	Loss: 0.893669	Dev Loss: 41.965240	Dev Acc: 20.799273
+Train Epoch: 0 [134400/318582 (42%)]	Loss: 0.936885	Dev Loss: 41.129578	Dev Acc: 20.799273
+Train Epoch: 0 [140800/318582 (44%)]	Loss: 0.871110	Dev Loss: 45.847702	Dev Acc: 20.799273
+Train Epoch: 0 [147200/318582 (46%)]	Loss: 0.671445	Dev Loss: 41.775181	Dev Acc: 20.799273
+Train Epoch: 0 [153600/318582 (48%)]	Loss: 1.145756	Dev Loss: 44.144714	Dev Acc: 20.799273
+Train Epoch: 0 [160000/318582 (50%)]	Loss: 0.798336	Dev Loss: 40.441166	Dev Acc: 20.799273
+Train Epoch: 0 [166400/318582 (52%)]	Loss: 1.371688	Dev Loss: 40.255447	Dev Acc: 20.799273
+Train Epoch: 0 [172800/318582 (54%)]	Loss: 0.756163	Dev Loss: 38.643513	Dev Acc: 20.799273
+Train Epoch: 0 [179200/318582 (56%)]	Loss: 0.714397	Dev Loss: 40.003544	Dev Acc: 20.799273
+Train Epoch: 0 [185600/318582 (58%)]	Loss: 0.978663	Dev Loss: 40.004803	Dev Acc: 20.799273
+Train Epoch: 0 [192000/318582 (60%)]	Loss: 1.011291	Dev Loss: 40.336754	Dev Acc: 20.799273
+Train Epoch: 0 [198400/318582 (62%)]	Loss: 0.784874	Dev Loss: 41.143616	Dev Acc: 20.799273
+Train Epoch: 0 [204800/318582 (64%)]	Loss: 0.942448	Dev Loss: 40.526157	Dev Acc: 20.799273
+Train Epoch: 0 [211200/318582 (66%)]	Loss: 1.145502	Dev Loss: 39.738777	Dev Acc: 20.799273
+Train Epoch: 0 [217600/318582 (68%)]	Loss: 0.855619	Dev Loss: 42.542404	Dev Acc: 20.799273
+Train Epoch: 0 [224000/318582 (70%)]	Loss: 0.820813	Dev Loss: 41.092525	Dev Acc: 20.799273
+Train Epoch: 0 [230400/318582 (72%)]	Loss: 0.938114	Dev Loss: 42.419331	Dev Acc: 2.815622
+Train Epoch: 0 [236800/318582 (74%)]	Loss: 0.740672	Dev Loss: 39.634144	Dev Acc: 4.087193
+Train Epoch: 0 [243200/318582 (76%)]	Loss: 0.826562	Dev Loss: 41.703835	Dev Acc: 3.542234
+Train Epoch: 0 [249600/318582 (78%)]	Loss: 0.852586	Dev Loss: 50.838375	Dev Acc: 2.179837
+Train Epoch: 0 [256000/318582 (80%)]	Loss: 0.706750	Dev Loss: 49.584381	Dev Acc: 3.996367
+Train Epoch: 0 [262400/318582 (82%)]	Loss: 0.806021	Dev Loss: 43.763420	Dev Acc: 2.633969
+Train Epoch: 0 [268800/318582 (84%)]	Loss: 0.880036	Dev Loss: 44.615993	Dev Acc: 3.360581
+Train Epoch: 0 [275200/318582 (86%)]	Loss: 0.640275	Dev Loss: 42.163521	Dev Acc: 3.178928
+Train Epoch: 0 [281600/318582 (88%)]	Loss: 0.964915	Dev Loss: 47.709438	Dev Acc: 0.544959
+Train Epoch: 0 [288000/318582 (90%)]	Loss: 0.846712	Dev Loss: 51.643227	Dev Acc: 2.361490
+Train Epoch: 0 [294400/318582 (92%)]	Loss: 0.576195	Dev Loss: 52.856800	Dev Acc: 2.906449
+Train Epoch: 0 [300800/318582 (94%)]	Loss: 0.620292	Dev Loss: 47.130165	Dev Acc: 2.089010
+Train Epoch: 0 [307200/318582 (96%)]	Loss: 0.691340	Dev Loss: 43.980553	Dev Acc: 2.633969
+Train Epoch: 0 [313600/318582 (98%)]	Loss: 0.590286	Dev Loss: 53.407936	Dev Acc: 2.361490
+Epoch: 0 - Dev Accuracy: 1.18074477748
+('Epoch start - ', 1)
+Train Epoch: 1 [0/318582 (0%)]	Loss: 0.724862	Dev Loss: 44.680527	Dev Acc: 0.726612
+Train Epoch: 1 [6400/318582 (2%)]	Loss: 0.581042	Dev Loss: 59.651775	Dev Acc: 21.435059
+Train Epoch: 1 [12800/318582 (4%)]	Loss: 0.707045	Dev Loss: 50.610363	Dev Acc: 21.707539
+Train Epoch: 1 [19200/318582 (6%)]	Loss: 0.710013	Dev Loss: 51.613853	Dev Acc: 21.071753
+Train Epoch: 1 [25600/318582 (8%)]	Loss: 0.575092	Dev Loss: 52.770042	Dev Acc: 4.268847
+Train Epoch: 1 [32000/318582 (10%)]	Loss: 0.735235	Dev Loss: 48.388706	Dev Acc: 7.266122
+Train Epoch: 1 [38400/318582 (12%)]	Loss: 0.609320	Dev Loss: 42.784462	Dev Acc: 11.353315
+Train Epoch: 1 [44800/318582 (14%)]	Loss: 0.343245	Dev Loss: 44.374649	Dev Acc: 6.539510
+Train Epoch: 1 [51200/318582 (16%)]	Loss: 0.660999	Dev Loss: 45.401146	Dev Acc: 10.717530
+Train Epoch: 1 [57600/318582 (18%)]	Loss: 0.526576	Dev Loss: 46.152802	Dev Acc: 11.353315
+Train Epoch: 1 [64000/318582 (20%)]	Loss: 0.568862	Dev Loss: 48.257710	Dev Acc: 6.176203
+Train Epoch: 1 [70400/318582 (22%)]	Loss: 0.655214	Dev Loss: 48.550598	Dev Acc: 7.992734
+Train Epoch: 1 [76800/318582 (24%)]	Loss: 0.678213	Dev Loss: 45.884621	Dev Acc: 12.261580
+Train Epoch: 1 [83200/318582 (26%)]	Loss: 0.487952	Dev Loss: 48.220291	Dev Acc: 9.809264
+Train Epoch: 1 [89600/318582 (28%)]	Loss: 0.608422	Dev Loss: 45.790279	Dev Acc: 10.172570
+Train Epoch: 1 [96000/318582 (30%)]	Loss: 0.437393	Dev Loss: 44.941326	Dev Acc: 13.533152
+slurmstepd: error: *** JOB 5937011 ON gpu-47 CANCELLED AT 2018-04-30T02:44:58 ***
