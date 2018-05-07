@@ -121,7 +121,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
 def load_sst(text_field, label_field, batch_size):
     train, dev, test = data.TabularDataset.splits(path='./data/News/', train='train.csv',
                                                   validation='dev.csv', test='test.csv', format='csv',
-                                                  fields=[('TITLE',text_field), ('CATEGORY',label_field)], skip_header=True)
+                                                  fields=[('ID',text_field), ('TITLE',text_field), ('URL',text_field), ('PUBLISHER',text_field), ('CATEGORY',label_field), ('STORY',text_field), ('HOSTNAME',text_field), ('TIMESTAMP',text_field)], skip_header=True)
 
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
