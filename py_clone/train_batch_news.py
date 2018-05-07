@@ -158,7 +158,7 @@ text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 train_iter, dev_iter, test_iter = load_sst(text_field, label_field, BATCH_SIZE)
 
-model = BiLSTMSentiment(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+model = BiLSTMNews(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                       use_gpu=USE_GPU, batch_size=BATCH_SIZE)
 
 if USE_GPU:
