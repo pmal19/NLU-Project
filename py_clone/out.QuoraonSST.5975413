@@ -1,0 +1,2 @@
+/opt/slurm/data/slurmd/job5975413/slurm_script: line 11: activate: No such file or directory
+/opt/slurm/data/slurmd/job5975413/slurm_script: line 14: /home/sgm400/hmm/bin/python: Permission denied
