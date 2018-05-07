@@ -95,6 +95,9 @@ def trainEpoch(epoch, break_val, trainLoader, model, optimizer, criterion, inp_d
             s1, target = Variable(s1.cuda()), Variable(target.cuda())
         else:
             s1, target = Variable(s1), Variable(target)
+        
+        output = model(s)
+        optimizer.zero_grad()
         # pdb.set_trace()
         output = model(s1)
         model.zero_grad()
@@ -159,11 +162,7 @@ def train(numEpochs, trainLoader, model, optimizer, criterion, inp_dim, batchSiz
 
 
 def main():
-<<<<<<< HEAD
 
-    local=False
-    if(local):
-=======
     local_goud = True
     local=True
     if(local_goud):
@@ -193,7 +192,7 @@ def main():
         glovePath = '/scratch/pm2758/nlu/glove.840B.300d.txt'
 
     batchSize = 64
-    learningRate = 0.001
+    learningRate = 0.0001
     momentum = 0.9
     numWorkers = 5
     
@@ -204,14 +203,14 @@ def main():
     num_layers = 2
     reverse = False
     bidirectional = True
-    dropout = 0.1
+    dropout = 0.4
 
     mlp_input_dim = 300
     mlp_dim = 300
     num_classes = 5
     num_mlp_layers = 5
     mlp_ln = True
-    classifier_dropout_rate = 0.1
+    classifier_dropout_rate = 0.4
 
     training = True
 

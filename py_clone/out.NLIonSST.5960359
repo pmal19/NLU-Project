@@ -1,35 +1,0 @@
-Train epoch 1:   0%|          | 0/217 [00:00<?, ?it/s]Load word embeddings...
-Training...
-Writing to /home/pm2758/NLUProject/py_clone/runsNLIonSST/1525194034
-
-./compTrainNLIonSST.py:174: UserWarning: Implicit dimension choice for log_softmax has been deprecated. Change the call to include dim=X as an argument.
-  log_probs = F.log_softmax(y)
-Train epoch 1:   0%|          | 1/217 [00:00<00:43,  4.98it/s]Train epoch 1:   7%|7         | 16/217 [00:00<00:03, 52.11it/s]Train epoch 1:  14%|#4        | 31/217 [00:00<00:02, 75.91it/s]Train epoch 1:  21%|##1       | 46/217 [00:00<00:01, 90.33it/s]Train epoch 1:  28%|##8       | 61/217 [00:00<00:01, 100.06it/s]Train epoch 1:  35%|###5      | 76/217 [00:00<00:01, 107.05it/s]Train epoch 1:  42%|####2     | 92/217 [00:00<00:01, 113.08it/s]Train epoch 1:  49%|####9     | 107/217 [00:00<00:00, 116.57it/s]Train epoch 1:  57%|#####6    | 123/217 [00:01<00:00, 120.07it/s]Train epoch 1:  64%|######4   | 139/217 [00:01<00:00, 123.17it/s]Train epoch 1:  71%|#######1  | 155/217 [00:01<00:00, 125.89it/s]Train epoch 1:  79%|#######8  | 171/217 [00:01<00:00, 127.84it/s]Train epoch 1:  86%|########6 | 187/217 [00:01<00:00, 129.57it/s]Train epoch 1:  93%|#########3| 202/217 [00:01<00:00, 130.70it/s]Exception KeyError: KeyError(<weakref at 0x2ad1feb0e730; to 'tqdm' at 0x2ad1fe8363d0>,) in <bound method tqdm.__del__ of Train epoch 1:  93%|#########3| 202/217 [00:01<00:00, 124.18it/s]> ignored
-Traceback (most recent call last):
-  File "./compTrainNLIonSST.py", line 235, in <module>
-    avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
-  File "./compTrainNLIonSST.py", line 77, in train_epoch_progress
-    pred = model(sent)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
-    result = self.forward(*input, **kwargs)
-  File "./compTrainNLIonSST.py", line 171, in forward
-    lstm_out1 = self.lstmInference(x1)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
-    result = self.forward(*input, **kwargs)
-  File "/home/pm2758/NLUProject/py_clone/biLSTMs.py", line 388, in forward
-    lstm_out, _ = self.lstmInference(sentence, self.hidden)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/module.py", line 325, in __call__
-    result = self.forward(*input, **kwargs)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/modules/rnn.py", line 169, in forward
-    output, hidden = func(input, self.all_weights, hx)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 385, in forward
-    return func(input, *fargs, **fkwargs)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/autograd/function.py", line 328, in _do_forward
-    flat_output = super(NestedIOFunction, self)._do_forward(*flat_input)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/autograd/function.py", line 350, in forward
-    result = self.forward_extended(*nested_tensors)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/nn/_functions/rnn.py", line 294, in forward_extended
-    cudnn.rnn.forward(self, input, hx, weight, output, hy)
-  File "/share/apps/pytorch/0.3.0_4/python2.7/lib/python2.7/site-packages/torch/backends/cudnn/rnn.py", line 266, in forward
-    hidden_size, tuple(hx.size())))
-RuntimeError: Expected hidden size (2, 8L, 150), got (2L, 32L, 150L)

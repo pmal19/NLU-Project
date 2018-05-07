@@ -1,6 +1,7 @@
 import sys
 #sys.path.insert(0,"/home/pm2758/etc/text")
 import torch
+
 import torch.nn as nn
 from torch import optim
 import time, random
@@ -69,16 +70,14 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        count += 1
         loss.backward()
         optimizer.step()
-        for val in (pred.max(1)[1]==label):
-            if val:
-                tot_correct += 1
+        tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(train_iter)
     # acc = get_accuracy(truth_res, pred_res)
-    tot_samples = (len(train_iter)*train_iter.batch_size).long()
-    acc = tot_correct/tot_samples
+    tot_samples = (len(train_iter)*train_iter.batch_size)
+    acc = 0.0
+    acc = (tot_correct/tot_samples).type(torch.FloatTensor)
     return avg_loss, acc
 
 
@@ -104,13 +103,12 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         # pred_res += [x for x in pred_label]
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
-        for val in (pred.max(1)[1]==label):
-            if val:
-                tot_correct += 1
+        tot_correct += (label.eq(pred.max(1)[1].long())).sum()
     avg_loss /= len(data)
     # acc = get_accuracy(truth_res, pred_res)
-    tot_samples = (len(data)*data.batch_size).long()
-    acc = tot_correct/tot_samples
+    tot_samples = (len(data)*data.batch_size)
+    acc = 0.0
+    acc = (tot_correct/tot_samples).type(torch.FloatTensor)
     print(name + ': loss %.2f acc %.1f' % (avg_loss, acc*100))
     return acc
 
@@ -173,7 +171,6 @@ class BiLSTMCompQuoraonSST(nn.Module):
 
 
 
-
 args = argparse.ArgumentParser()
 args.add_argument('--m', dest='model', default='lstm', help='specify the mode to use (default: lstm)')
 args = args.parse_args()
@@ -230,7 +227,12 @@ if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
+<<<<<<< HEAD
+    pdb.set_trace()
+    tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100./(len(train_iter)*train_iter.batch_size)))
+=======
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
+>>>>>>> bacedc1d3c9465642d9f6dd39a2956c8a667f3c9
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
     dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
     if dev_acc > best_dev_acc:
