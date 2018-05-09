@@ -75,8 +75,8 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
         pred = model(sent)
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        pred_label = pred.data.max(1)[1].numpy()
+        pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
@@ -144,7 +144,7 @@ args = argparse.ArgumentParser()
 args.add_argument('--m', dest='model', default='lstm', help='specify the mode to use (default: lstm)')
 args = args.parse_args()
 
-EPOCHS = 20
+EPOCHS = 2
 USE_GPU = torch.cuda.is_available()
 EMBEDDING_DIM = 300
 HIDDEN_DIM = 150
@@ -188,6 +188,8 @@ best_model = model
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 loss_function = nn.NLLLoss()
 
+# pdb.set_trace()
+
 print('Training...')
 out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsNews", timestamp))
 print("Writing to {}\n".format(out_dir))
@@ -197,14 +199,14 @@ for epoch in range(EPOCHS):
     avg_loss, acc = train_epoch_progress(model, train_iter, loss_function, optimizer, text_field, label_field, epoch, USE_GPU)
     tqdm.write('Train: loss %.2f acc %.1f' % (avg_loss, acc*100))
     torch.save(model.state_dict(), out_dir + '/best_model' + '.pth')
-    dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
-    if dev_acc > best_dev_acc:
-        if best_dev_acc > 0:
-            os.system('rm '+ out_dir + '/best_model' + '.pth')
-        best_dev_acc = dev_acc
-        best_model = model
-        torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
-        # evaluate on test with the best dev performance model
-        test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
-test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
+    # dev_acc = evaluate(model, dev_iter, loss_function, 'Dev', USE_GPU)
+    # if dev_acc > best_dev_acc:
+    #     if best_dev_acc > 0:
+    #         os.system('rm '+ out_dir + '/best_model' + '.pth')
+    #     best_dev_acc = dev_acc
+    #     best_model = model
+    #     torch.save(best_model.state_dict(), out_dir + '/best_model' + '.pth')
+    #     # evaluate on test with the best dev performance model
+    #     test_acc = evaluate(best_model, test_iter, loss_function, 'Test', USE_GPU)
+# test_acc = evaluate(best_model, test_iter, loss_function, 'Final Test', USE_GPU)
 
