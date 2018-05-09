@@ -75,8 +75,8 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         model.batch_size = len(label.data)
         model.hidden = model.init_hidden()
         pred = model(sent)
-        pred_label = pred.data.max(1)[1].numpy()
-        pred_res += [x for x in pred_label]
+        # pred_label = pred.data.max(1)[1].numpy()
+        # pred_res += [x for x in pred_label]
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
