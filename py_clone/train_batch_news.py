@@ -144,7 +144,7 @@ args = argparse.ArgumentParser()
 args.add_argument('--m', dest='model', default='lstm', help='specify the mode to use (default: lstm)')
 args = args.parse_args()
 
-EPOCHS = 2
+EPOCHS = 20
 USE_GPU = torch.cuda.is_available()
 EMBEDDING_DIM = 300
 HIDDEN_DIM = 150
