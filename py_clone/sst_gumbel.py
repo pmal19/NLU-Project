@@ -206,7 +206,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        model.hidden = model.init_hidden()
+        # model.hidden = model.init_hidden()
         pred = model(sent)
         # pred_label = pred.data.max(1)[1].numpy()
         # pred_res += [x for x in pred_label]
@@ -237,7 +237,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        model.hidden = model.init_hidden()
+        # model.hidden = model.init_hidden()
         pred = model(sent)
         # pred_label = pred.data.max(1)[1].numpy()
         # pred_res += [x for x in pred_label]
