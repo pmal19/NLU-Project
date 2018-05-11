@@ -61,7 +61,7 @@ class GumbelNLIAll(nn.Module):
         self.hidden2label = nn.Linear(hidden_dim*12, label_size)
         self.g_linear1=nn.Linear(3, 3)
 
-    def forward(self, sentence1):
+    def forward(self, sentence1, sentence2):
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
         x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
         # x = torch.cat((x1, x2), 2)
