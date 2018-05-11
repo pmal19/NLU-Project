@@ -34,12 +34,12 @@ class GumbelNLIAll(nn.Module):
 
         
         loaded = torch.load(news_path)
-        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
-        newModel = self.lstmInference.state_dict()
+        self.lstmNews = news(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmNews.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         newModel.update(pretrained_dict)
-        self.lstmInference.load_state_dict(newModel)
-        for param in self.lstmInference.parameters():
+        self.lstmNews.load_state_dict(newModel)
+        for param in self.lstmNews.parameters():
             param.requires_grad = False
 
 
@@ -58,17 +58,32 @@ class GumbelNLIAll(nn.Module):
         self.batch_size = batch_size
         self.dropout = dropout
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.hidden2label = nn.Linear(hidden_dim*6, label_size)
+        self.hidden2label = nn.Linear(hidden_dim*12, label_size)
         self.g_linear1=nn.Linear(3, 3)
 
     def forward(self, sentence1):
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
+        x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
+        # x = torch.cat((x1, x2), 2)
+        # sst_out, self.hidden = self.sst_lstm(x, self.hidden)
+        # nli_out, self.hidden = self.nli_lstm(x, self.hidden)
+        sst_out1 = self.lstmSentiment(x1)
+        sst_out2 = self.lstmSentiment(x2)
+        sst_out = torch.cat((sst_out1, sst_out2), 1)
 
-        nli_out = self.lstmInference(x1)
-        quora_out = self.lstmDuplicate(x1)
-        sst_out = self.lstmSentiment(x1)
+        quora_out1 = self.lstmDuplicate(x1)
+        quora_out2 = self.lstmDuplicate(x2)
+        quora_out = torch.cat((quora_out1, quora_out2), 1)
+
+        news_out1 = self.lstmNews(x1)
+        news_out2 = self.lstmNews(x2)
+        news_out = torch.cat((news_out1, news_out2), 1)
+
+        # nli_out = self.lstmInference(x1)
+        # quora_out = self.lstmDuplicate(x1)
+        # sst_out = self.lstmSentiment(x1)
         g_inp=Variable(torch.ones(nli_out.size()[0],3).cuda())
-        g_inp2=torch.cat((nli_out, quora_out, sst_out), 1)
+        g_inp2=torch.cat((sst_out, quora_out, news_out), 1)
         out_l1=self.g_linear1(g_inp)
         out_l2=F.relu(out_l1)
         out_l3=F.log_softmax(out_l2)

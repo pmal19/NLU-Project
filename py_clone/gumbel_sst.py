@@ -23,12 +23,12 @@ class GumbelSSTAll(nn.Module):
         super(GumbelNewsAll, self).__init__()
 
         loaded = torch.load(news_path)
-        self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
-        newModel = self.lstmSentiment.state_dict()
+        self.lstmNews = news(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmNews.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
         newModel.update(pretrained_dict)
-        self.lstmSentiment.load_state_dict(newModel)
-        for param in self.lstmSentiment.parameters():
+        self.lstmNews.load_state_dict(newModel)
+        for param in self.lstmNews.parameters():
             param.requires_grad = False
 
         
@@ -65,9 +65,9 @@ class GumbelSSTAll(nn.Module):
 
         nli_out = self.lstmInference(x1)
         quora_out = self.lstmDuplicate(x1)
-        sst_out = self.lstmSentiment(x1)
+        news_out = self.lstmNews(x1)
         g_inp=Variable(torch.ones(nli_out.size()[0],3).cuda())
-        g_inp2=torch.cat((nli_out, quora_out, sst_out), 1)
+        g_inp2=torch.cat((nli_out, quora_out, news_out), 1)
         out_l1=self.g_linear1(g_inp)
         out_l2=F.relu(out_l1)
         out_l3=F.log_softmax(out_l2)
