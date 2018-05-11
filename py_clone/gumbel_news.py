@@ -24,75 +24,51 @@ class GumbelNewsAll(nn.Module):
         super(GumbelNewsAll, self).__init__()
 
         loaded = torch.load(sst_path)
-        #self.lstmSentiment = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmSentiment.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-        # print(pretrained_dict)
         newModel.update(pretrained_dict)
         self.lstmSentiment.load_state_dict(newModel)
-        # print(self.lstmSentiment)
-        # print(self.lstmSentiment.lstmSentiment)
         for param in self.lstmSentiment.parameters():
             param.requires_grad = False
 
         
         loaded = torch.load(nli_path)
-        # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmInference.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-        # print(pretrained_dict)
         newModel.update(pretrained_dict)
         self.lstmInference.load_state_dict(newModel)
-        # print(self.lstmInference)
-        # print(self.lstmInference.lstmInference)
         for param in self.lstmInference.parameters():
             param.requires_grad = False
 
 
         loaded = torch.load(quora_path)
-        # self.lstmDuplicate = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmDuplicate.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-        # print(pretrained_dict)
         newModel.update(pretrained_dict)
         self.lstmDuplicate.load_state_dict(newModel)
-        # print(self.lstmDuplicate)
-        # print(self.lstmDuplicate.lstmDuplicate)
         for param in self.lstmDuplicate.parameters():
             param.requires_grad = False
 
 
-        # self.sst_lstm = load_model("sst", sst_path, embedding_dim, hidden_dim)
-        # self.nli_lstm = load_model("nli", nli_path, embedding_dim, hidden_dim)
-        #pdb.set_trace()
         self.hidden_dim = hidden_dim
         self.use_gpu = use_gpu
         self.batch_size = batch_size
         self.dropout = dropout
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        self.hidden2label = nn.Linear(hidden_dim*12, label_size)
-        self.g_linear1=nn.Linear(hidden_dim*12, 2)
+        self.hidden2label = nn.Linear(hidden_dim*6, label_size)
+        self.g_linear1=nn.Linear(hidden_dim*6, 2)
 
-    def forward(self, sentence1, sentence2):
+    def forward(self, sentence1):
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
-        x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
-        
-        sst_out1 = self.lstmSentiment(x1)
-        sst_out2 = self.lstmSentiment(x2)
-        sst_out = torch.cat((sst_out1, sst_out2), 1)
 
-        nli_out1 = self.lstmInference(x1)
-        nli_out2 = self.lstmInference(x2)
-        nli_out = torch.cat((nli_out1, nli_out2), 1)
+        nli_out = self.lstmInference(x1)
+        quora_out = self.lstmDuplicate(x1)
+        sst_out = self.lstmSentiment(x1)
 
-        quora_out1 = self.lstmDuplicate(x1)
-        quora_out2 = self.lstmDuplicate(x2)
-        quora_out = torch.cat((quora_out1, quora_out2), 1)
-
-        g_inp=torch.cat((nli_out, sst_out, quora_out), 1)
+        g_inp=torch.cat((nli_out, quora_out, sst_out), 1)
         out_l1=self.g_linear1(g_inp)
         out_l2=F.relu(out_l1)
         out_l3=F.log_softmax(out_l2)
@@ -100,10 +76,10 @@ class GumbelNewsAll(nn.Module):
         r1 = selector[:,0]
         r2 = selector[:,1]
         r3 = selector[:,2]
-        r11 = r1.repeat(self.hidden_dim*4,1)
-        r22 = r2.repeat(self.hidden_dim*4,1)
-        r33 = r3.repeat(self.hidden_dim*4,1)
-        # pdb.set_trace()
+        r11 = r1.repeat(self.hidden_dim*2,1)
+        r22 = r2.repeat(self.hidden_dim*2,1)
+        r33 = r2.repeat(self.hidden_dim*2,1)
+
         rf = torch.cat((r11,r22,r33),0).transpose(0,1)
         
         ret = g_inp*rf
@@ -196,10 +172,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        # model.hidden = model.init_hidden()
-        pred = model(sent)
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        pred, _ = model(sent)
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
@@ -227,10 +200,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        # model.hidden = model.init_hidden()
-        pred = model(sent)
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        pred, _ = model(sent)
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
@@ -248,7 +218,7 @@ def load_news(text_field, label_field, batch_size):
     text_field.build_vocab(train, dev, test)
     label_field.build_vocab(train, dev, test)
     train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
-                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.text), repeat=False, device=-1)
+                batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: len(x.TITLE), repeat=False, device=-1)
     # for GPU run
     # train_iter, dev_iter, test_iter = data.BucketIterator.splits((train, dev, test),
                 # batch_sizes=(batch_size, len(dev), len(test)), sort_key=lambda x: max(len(x.text1),len(x.text2)), repeat=False, device=None)

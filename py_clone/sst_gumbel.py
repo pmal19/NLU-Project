@@ -28,50 +28,35 @@ class GumbelSSTwithNews(nn.Module):
         super(GumbelSSTwithNews, self).__init__()
 
         loaded = torch.load(nli_path)
-        # self.lstmInference = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmInference.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-        # print(pretrained_dict)
         newModel.update(pretrained_dict)
         self.lstmInference.load_state_dict(newModel)
-        # print(self.lstmInference)
-        # print(self.lstmInference.lstmInference)
         for param in self.lstmInference.parameters():
             param.requires_grad = False
 
         
         loaded = torch.load(quora_path)
-        # self.lstmDuplicate = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmDuplicate.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-        # print(pretrained_dict)
         newModel.update(pretrained_dict)
         self.lstmDuplicate.load_state_dict(newModel)
-        # print(self.lstmDuplicate)
-        # print(self.lstmDuplicate.lstmDuplicate)
         for param in self.lstmDuplicate.parameters():
             param.requires_grad = False
 
 
         loaded = torch.load(news_path)
-        # self.lstmNews = nn.LSTM(input_size=embedding_dim, hidden_size=hidden_dim, bidirectional=True)
         self.lstmNews = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmNews.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
-        # print(pretrained_dict)
         newModel.update(pretrained_dict)
         self.lstmNews.load_state_dict(newModel)
-        # print(self.lstmNews)
-        # print(self.lstmNews.lstmNews)
         for param in self.lstmNews.parameters():
             param.requires_grad = False
 
 
-        # self.sst_lstm = load_model("sst", sst_path, embedding_dim, hidden_dim)
-        # self.nli_lstm = load_model("nli", nli_path, embedding_dim, hidden_dim)
-        #pdb.set_trace()
         self.hidden_dim = hidden_dim
         self.use_gpu = use_gpu
         self.batch_size = batch_size
@@ -82,21 +67,10 @@ class GumbelSSTwithNews(nn.Module):
 
     def forward(self, sentence1):
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
-        # x2 = self.embeddings(sentence2).view(len(sentence2), self.batch_size, -1)
-        # x = torch.cat((x1, x2), 2)
-        # sst_out, self.hidden = self.sst_lstm(x, self.hidden)
-        # nli_out, self.hidden = self.nli_lstm(x, self.hidden)
+        
         sst_out = self.lstmInference(x1)
-        # sst_out2 = self.lstmInference(x2)
-        # sst_out = torch.cat((sst_out1, sst_out2), 1)
-
         nli_out = self.lstmDuplicate(x1)
-        # nli_out2 = self.lstmDuplicate(x2)
-        # nli_out = torch.cat((nli_out1, nli_out2), 1)
-
         news_out = self.lstmNews(x1)
-        # nli_out2 = self.lstmDuplicate(x2)
-        # nli_out = torch.cat((nli_out1, nli_out2), 1)
 
         g_inp=torch.cat((nli_out, sst_out, news_out), 1)
         out_l1=self.g_linear1(g_inp)
@@ -206,10 +180,7 @@ def train_epoch_progress(model, train_iter, loss_function, optimizer, text_field
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        # model.hidden = model.init_hidden()
-        pred = model(sent)
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        pred, _ = model(sent)
         model.zero_grad()
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
@@ -237,10 +208,7 @@ def evaluate(model, data, loss_function, name, USE_GPU):
         label.data.sub_(1)
         truth_res += list(label.data)
         model.batch_size = len(label.data)
-        # model.hidden = model.init_hidden()
-        pred = model(sent)
-        # pred_label = pred.data.max(1)[1].numpy()
-        # pred_res += [x for x in pred_label]
+        pred, _ = model(sent)
         loss = loss_function(pred, label)
         avg_loss += loss.data[0]
         tot_correct, tot_samples = get_accuracy2(tot_correct, tot_samples, label, pred)
