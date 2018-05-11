@@ -265,7 +265,7 @@ nli_path="best_model_nli/best_model.pth"
 sst_path = "best_model_sst/best_model.pth"
 
 # pdb.set_trace()
-model = GumbelNewsAll(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+model = GumbelSSTAll(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE, news_path=news_path, nli_path=nli_path, quora_path=quora_path)
 
 if USE_GPU:
