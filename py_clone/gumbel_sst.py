@@ -260,7 +260,7 @@ label_field = data.Field(sequential=False)
 train_iter, dev_iter, test_iter = load_sst(text_field, label_field, BATCH_SIZE)
 
 quora_path = "best_model_quora/best_model.pth"
-news_path = "best_model_news/best_model.pth"
+news_path = "best_model_news/news_best_model.pth"
 nli_path="best_model_nli/best_model.pth"
 sst_path = "best_model_sst/best_model.pth"
 
