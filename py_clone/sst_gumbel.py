@@ -297,7 +297,7 @@ news_path="best_model_news/best_model.pth"
 
 # pdb.set_trace()
 model = GumbelSSTwithNews(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
-                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, nli_path=nli_path, quora_path=quora_path)
+                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, nli_path=nli_path, quora_path=quora_path, news_path=news_path)
 
 if USE_GPU:
     model = model.cuda()
