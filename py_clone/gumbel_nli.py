@@ -21,7 +21,7 @@ random.seed(1)
 class GumbelNLIAll(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, sst_path, news_path, quora_path, dropout=0.5):
-        super(GumbelNewsAll, self).__init__()
+        super(GumbelNLIAll, self).__init__()
 
         loaded = torch.load(sst_path)
         self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)

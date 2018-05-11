@@ -20,7 +20,7 @@ random.seed(1)
 class GumbelSSTAll(nn.Module):
 
     def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, news_path, nli_path, quora_path, dropout=0.5):
-        super(GumbelNewsAll, self).__init__()
+        super(GumbelSSTAll, self).__init__()
 
         loaded = torch.load(news_path)
         self.lstmNews = news(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
