@@ -448,7 +448,7 @@ class duplicate(nn.Module):
 class news(nn.Module):
     """docstring for duplicate"""
     def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, dropout=0.5):
-        super(duplicate, self).__init__()
+        super(news, self).__init__()
         self.hidden_dim = hidden_dim
         self.use_gpu = use_gpu
         self.batch_size = batch_size
