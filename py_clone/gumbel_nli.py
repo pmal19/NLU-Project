@@ -18,6 +18,106 @@ torch.set_num_threads(8)
 torch.manual_seed(1)
 random.seed(1)
 
+class GumbelNLIAll(nn.Module):
+
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, sst_path, nli_path, quora_path, dropout=0.5):
+        super(GumbelNewsAll, self).__init__()
+
+        loaded = torch.load(sst_path)
+        self.lstmSentiment = sentiment(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmSentiment.state_dict()
+        pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
+        newModel.update(pretrained_dict)
+        self.lstmSentiment.load_state_dict(newModel)
+        for param in self.lstmSentiment.parameters():
+            param.requires_grad = False
+
+        
+        loaded = torch.load(nli_path)
+        self.lstmInference = inference(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmInference.state_dict()
+        pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
+        newModel.update(pretrained_dict)
+        self.lstmInference.load_state_dict(newModel)
+        for param in self.lstmInference.parameters():
+            param.requires_grad = False
+
+
+        loaded = torch.load(quora_path)
+        self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
+        newModel = self.lstmDuplicate.state_dict()
+        pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
+        newModel.update(pretrained_dict)
+        self.lstmDuplicate.load_state_dict(newModel)
+        for param in self.lstmDuplicate.parameters():
+            param.requires_grad = False
+
+
+        self.hidden_dim = hidden_dim
+        self.use_gpu = use_gpu
+        self.batch_size = batch_size
+        self.dropout = dropout
+        self.embeddings = nn.Embedding(vocab_size, embedding_dim)
+        self.hidden2label = nn.Linear(hidden_dim*6, label_size)
+        self.g_linear1=nn.Linear(3, 3)
+
+    def forward(self, sentence1):
+        x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
+
+        nli_out = self.lstmInference(x1)
+        quora_out = self.lstmDuplicate(x1)
+        sst_out = self.lstmSentiment(x1)
+        g_inp=Variable(torch.ones(nli_out.size()[0],3).cuda())
+        g_inp2=torch.cat((nli_out, quora_out, sst_out), 1)
+        out_l1=self.g_linear1(g_inp)
+        out_l2=F.relu(out_l1)
+        out_l3=F.log_softmax(out_l2)
+        selector=self.st_gumbel_softmax(out_l3)
+        # print(nli_out.size(),quora_out.size(),sst_out.size(),g_inp.size(),out_l1.size(),out_l2.size(),out_l3.size(),selector.size())
+        r1 = selector[:,0]
+        r2 = selector[:,1]
+        r3 = selector[:,2]
+        r11 = r1.repeat(self.hidden_dim*2,1)
+        r22 = r2.repeat(self.hidden_dim*2,1)
+        r33 = r3.repeat(self.hidden_dim*2,1)
+
+        rf = torch.cat((r11,r22,r33),0).transpose(0,1)
+        
+        ret = g_inp2*rf
+        y = self.hidden2label(ret)
+        log_probs = F.log_softmax(y)
+        return log_probs, selector
+
+
+    def masked_softmax(self,logits, mask=None):
+        eps = 1e-20
+        probs = F.softmax(logits)
+        if mask is not None:
+            mask = mask.float()
+            probs = probs * mask + eps
+            probs = probs / probs.sum(1, keepdim=True)
+        return probs
+
+    def st_gumbel_softmax(self,logits, temperature=1.0, mask=None):
+        def convert_to_one_hot(indices, num_classes):
+            batch_size = indices.size(0)
+            indices = indices.unsqueeze(1)
+            one_hot = Variable(indices.data.new(batch_size, num_classes).zero_().scatter_(1, indices.data, 1))
+            return one_hot
+
+        eps = 1e-20
+        u = logits.data.new(*logits.size()).uniform_()
+        gumbel_noise = Variable(-torch.log(-torch.log(u + eps) + eps))
+        y = logits + gumbel_noise
+        y = self.masked_softmax(logits=y / temperature, mask=mask)
+        y_argmax = y.max(1)[1]
+        # pdb.set_trace()
+        y_hard = convert_to_one_hot(
+            indices=y_argmax,
+            num_classes=y.size(1)).float()
+        y = (y_hard - y).detach() + y
+        return y
+
 
 def load_bin_vec(fname, vocab):
     """
@@ -189,7 +289,7 @@ sst_path = "best_model_sst/best_model.pth"
 nli_path="best_model_nli/best_model.pth"
 
 # pdb.set_trace()
-model = GumbelNLI(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+model = GumbelNLIAll(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
                           use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path=sst_path, quora_path=quora_path)
 
 if USE_GPU:

@@ -288,7 +288,7 @@ optimizer = optim.Adam(filter(lambda param: param.requires_grad,model.parameters
 loss_function = nn.NLLLoss()
 
 print('Training...')
-out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsGumbelQuora", timestamp))
+out_dir = os.path.abspath(os.path.join(os.path.curdir, "runsGumbelNews", timestamp))
 print("Writing to {}\n".format(out_dir))
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
