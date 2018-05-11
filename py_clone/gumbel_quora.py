@@ -20,7 +20,7 @@ random.seed(1)
 
 class GumbelQuoraAll(nn.Module):
 
-    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, sst_path, nli_path, quora_path, dropout=0.5):
+    def __init__(self, embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size, sst_path, nli_path, news_path, dropout=0.5):
         super(GumbelNewsAll, self).__init__()
 
         loaded = torch.load(sst_path)
@@ -43,7 +43,7 @@ class GumbelQuoraAll(nn.Module):
             param.requires_grad = False
 
 
-        loaded = torch.load(quora_path)
+        loaded = torch.load(news_path)
         self.lstmDuplicate = duplicate(embedding_dim, hidden_dim, vocab_size, label_size, use_gpu, batch_size)
         newModel = self.lstmDuplicate.state_dict()
         pretrained_dict = {k: v for k, v in loaded.items() if k in newModel}
@@ -281,9 +281,13 @@ best_dev_acc = 0.0
 text_field = data.Field(lower=True)
 label_field = data.Field(sequential=False)
 train_iter, dev_iter, test_iter = load_quora(text_field, label_field, BATCH_SIZE)
+quora_path = "best_model_quora/best_model.pth"
+news_path = "best_model_news/best_model.pth"
+nli_path="best_model_nli/best_model.pth"
+sst_path = "best_model_sst/best_model.pth"
 # pdb.set_trace()
-model = GumbelQuoraAll(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
-                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path="best_model_sst/best_model.pth", nli_path="best_model_nli/best_model.pth")
+model = GumbelNewsAll(embedding_dim=EMBEDDING_DIM, hidden_dim=HIDDEN_DIM, vocab_size=len(text_field.vocab), label_size=len(label_field.vocab)-1,\
+                          use_gpu=USE_GPU, batch_size=BATCH_SIZE, sst_path=sst_path, nli_path=nli_path, news_path=news_path)
 
 if USE_GPU:
     model = model.cuda()
