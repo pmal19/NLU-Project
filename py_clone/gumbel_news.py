@@ -59,7 +59,7 @@ class GumbelNewsAll(nn.Module):
         self.dropout = dropout
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
         self.hidden2label = nn.Linear(hidden_dim*6, label_size)
-        self.g_linear1=nn.Linear(hidden_dim*6, 2)
+        self.g_linear1=nn.Linear(3, 3)
 
     def forward(self, sentence1):
         x1 = self.embeddings(sentence1).view(len(sentence1), self.batch_size, -1)
@@ -67,22 +67,23 @@ class GumbelNewsAll(nn.Module):
         nli_out = self.lstmInference(x1)
         quora_out = self.lstmDuplicate(x1)
         sst_out = self.lstmSentiment(x1)
-
-        g_inp=torch.cat((nli_out, quora_out, sst_out), 1)
+        g_inp=Variable(torch.ones(nli_out.size()[0],3).cuda())
+        g_inp2=torch.cat((nli_out, quora_out, sst_out), 1)
         out_l1=self.g_linear1(g_inp)
         out_l2=F.relu(out_l1)
         out_l3=F.log_softmax(out_l2)
         selector=self.st_gumbel_softmax(out_l3)
+        # print(nli_out.size(),quora_out.size(),sst_out.size(),g_inp.size(),out_l1.size(),out_l2.size(),out_l3.size(),selector.size())
         r1 = selector[:,0]
         r2 = selector[:,1]
         r3 = selector[:,2]
         r11 = r1.repeat(self.hidden_dim*2,1)
         r22 = r2.repeat(self.hidden_dim*2,1)
-        r33 = r2.repeat(self.hidden_dim*2,1)
+        r33 = r3.repeat(self.hidden_dim*2,1)
 
         rf = torch.cat((r11,r22,r33),0).transpose(0,1)
         
-        ret = g_inp*rf
+        ret = g_inp2*rf
         y = self.hidden2label(ret)
         log_probs = F.log_softmax(y)
         return log_probs, selector
